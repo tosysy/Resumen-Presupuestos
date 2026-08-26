@@ -73,20 +73,15 @@
         <!-- FILTROS -->
         <div class="filters-section">
             <div class="input-group custom-select">
-                <label>Cliente</label>
-                <input type="text" id="clientInput" placeholder="Selecciona o escribe..." autocomplete="off">
-                <div class="options-list" id="clientList"></div>
-            </div>
-            
-            <div class="input-group custom-select">
                 <label>Grupo Cliente</label>
                 <input type="text" id="groupInput" placeholder="Selecciona o escribe..." autocomplete="off">
                 <div class="options-list" id="groupList"></div>
             </div>
 
-            <div class="input-group" style="flex: 0.5;">
-                <label>Nº Oferta</label>
-                <input type="text" id="ofertaInput" placeholder="Ej: 1234">
+            <div class="input-group custom-select">
+                <label>Cliente</label>
+                <input type="text" id="clientInput" placeholder="Selecciona o escribe..." autocomplete="off">
+                <div class="options-list" id="clientList"></div>
             </div>
 
             <div class="input-group">
@@ -204,7 +199,6 @@
             loadData();
             
             // Listeners normales
-            document.getElementById('ofertaInput').addEventListener('input', applyFilters);
             document.getElementById('startDateInput').addEventListener('change', applyFilters);
             document.getElementById('endDateInput').addEventListener('change', applyFilters);
 
@@ -217,14 +211,17 @@
             });
         });
 
-        // Configuración de los Dropdowns Personalizados
-        function setupCustomDropdown(inputId, listId, items) {
+        // Configuración de los Dropdowns Personalizados (DINÁMICOS)
+        function setupCustomDropdown(inputId, listId, getItemsFn) {
             const input = document.getElementById(inputId);
             const list = document.getElementById(listId);
 
             function renderOptions(filterText = "") {
                 list.innerHTML = "";
                 const cleanFilter = removeAccents(filterText.toLowerCase().trim());
+                
+                // Llamamos a la función para obtener los elementos actualizados en tiempo real
+                const items = getItemsFn();
                 
                 const filtered = items.filter(item => 
                     removeAccents(item.toLowerCase()).includes(cleanFilter)
@@ -256,7 +253,7 @@
             input.addEventListener('input', () => {
                 renderOptions(input.value);
                 list.style.display = 'block';
-                applyFilters(); // Aplica el filtro en vivo mientras escribes
+                applyFilters(); 
             });
         }
 
@@ -277,12 +274,21 @@
                 const data = await response.json();
                 allRegistros = parseGoogleSheets(data);
 
-                // Extraer listas únicas y ordenadas para los desplegables
-                uniqueClients = [...new Set(allRegistros.map(r => r.cliente).filter(c => c))].sort();
-                uniqueGroups = [...new Set(allRegistros.map(r => r.grupoCliente).filter(g => g))].sort();
-                
-                setupCustomDropdown('clientInput', 'clientList', uniqueClients);
-                setupCustomDropdown('groupInput', 'groupList', uniqueGroups);
+                // GRUPOS: Mostrar siempre todos los grupos únicos disponibles
+                setupCustomDropdown('groupInput', 'groupList', () => {
+                    return [...new Set(allRegistros.map(r => r.grupoCliente).filter(g => g))].sort();
+                });
+
+                // CLIENTES (EN CASCADA): Filtrar clientes basándose en el Grupo seleccionado
+                setupCustomDropdown('clientInput', 'clientList', () => {
+                    const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
+                    
+                    const registrosValidos = allRegistros.filter(row => {
+                        return !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
+                    });
+                    
+                    return [...new Set(registrosValidos.map(r => r.cliente).filter(c => c))].sort();
+                });
                 
                 mostrarMensajeInicial(); 
             } catch (error) {
@@ -372,13 +378,12 @@
         function applyFilters() {
             const clientVal = removeAccents(document.getElementById('clientInput').value.toLowerCase().trim());
             const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
-            const ofertaVal = removeAccents(document.getElementById('ofertaInput').value.toLowerCase().trim());
             
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
             // Si todo está vacío, mostramos el mensaje por defecto
-            if (!clientVal && !groupVal && !ofertaVal && !startVal && !endVal) {
+            if (!clientVal && !groupVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
             }
@@ -390,7 +395,6 @@
             currentFiltered = allRegistros.filter(row => {
                 const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
                 const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
-                const matchOferta = !ofertaVal || removeAccents(row.oferta.toLowerCase()).includes(ofertaVal);
 
                 let matchesDate = true;
                 if (startDate || endDate) {
@@ -401,7 +405,7 @@
                         matchesDate = false;
                     }
                 }
-                return matchClient && matchGroup && matchOferta && matchesDate;
+                return matchClient && matchGroup && matchesDate;
             });
 
             // Orden por defecto: los más recientes primero

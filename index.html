@@ -115,13 +115,14 @@
                 <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
                 <div class="stat-value" id="kpiFueraPlazo">0</div>
             </div>
-            <!-- NUEVOS KPIS DE PEDIDOS -->
+            
+            <!-- KPIS DE PEDIDOS (DIRECTOS DE LA API) -->
             <div class="stat-card pedidos">
                 <div class="stat-title" style="color: var(--purple);">Pedidos Filtrados</div>
                 <div class="stat-value" id="kpiTotalPedidos">0</div>
             </div>
             <div class="stat-card pedidos">
-                <div class="stat-title" style="color: var(--purple);">Importe Pedidos</div>
+                <div class="stat-title" style="color: var(--purple);">Importe Pedidos API</div>
                 <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
         </div>
@@ -144,7 +145,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryBody">
-                        <tr><td colspan="8" class="loading">Descargando bases de datos...</td></tr>
+                        <tr><td colspan="8" class="loading">Conectando con la API y Google Sheets...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -182,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="10" class="loading">Descargando bases de datos...</td></tr>
+                        <tr><td colspan="10" class="loading">Conectando con la API y Google Sheets...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -190,17 +191,18 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
-        const SPREADSHEET_ID_PRE = '12Q22Oqf5pD-2NAo9JOOCnTzaiI7Go9DjKuuYAk0MZMA'; 
-        const SPREADSHEET_ID_PED = '1s4UujUFauUSvfK25IwE3dwuCs9mVNzt45ScIrooVlbA';
+        // --- CONFIGURACIÓN ---
+        const SPREADSHEET_ID_PRE = '12Q22Oqf5pD-2NAo9JOOCnTzaiI7Go9DjKuuYAk0MZMA'; // Sheets Presupuestos
         const API_KEY = 'AIzaSyDOjxTMxlPAGOEayC0JwD28mx21zd6xkk8'; 
+        
+        // LA API DIRECTA DE PEDIDOS (Actualizada)
+        const API_URL_PEDIDOS = 'http://ancora.informax.es:9697/api//get_data?imax_pass=123&table=F_PCL';
         
         const DIAS_LIMITE = 5;
 
-        let allRegistros = [];
-        let allPedidos = [];
+        let allRegistros = []; // Presupuestos
         let currentFilteredPre = [];
-        let currentFilteredPed = [];
+        let apiPedidos = [];   // Aquí se guardan los datos directos de la API
 
         const fmtMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
         const fmtPorcentaje = (num) => (isNaN(num) ? '0.00%' : (num * 100).toFixed(2) + '%');
@@ -261,72 +263,58 @@
             });
         }
 
-        // FUNCIÓN MEJORADA: Entiende fechas con barras (/) y guiones (-)
+        // Traductor de fechas que entiende las barras de GSheets y los guiones de la API
         function parseSheetDate(dateStr) {
             if (!dateStr || String(dateStr).trim() === '') return null;
             const str = String(dateStr).trim();
             
-            // Si la fecha viene con barras (ej: 21/08/2026)
             if (str.includes('/')) {
                 const parts = str.split('/');
                 if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
             }
-            
-            // Si la fecha viene con guiones del ERP (ej: 2026-08-21 o 21-08-2026)
             if (str.includes('-')) {
                 const parts = str.split('-');
                 if (parts.length === 3) {
-                    // Si empieza por el año (YYYY-MM-DD)
-                    if (parts[0].length === 4) {
-                        return new Date(parts[0], parts[1] - 1, parts[2]);
-                    } 
-                    // Si empieza por el día (DD-MM-YYYY)
-                    else {
-                        return new Date(parts[2], parts[1] - 1, parts[0]);
-                    }
+                    if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+                    else return new Date(parts[2], parts[1] - 1, parts[0]);
                 }
             }
-            
             return null; 
         }
 
         async function loadData() {
             try {
-                // Descargar ambos excels a la vez
+                // 1. URL de Google Sheets (Para presupuestos)
                 const urlPre = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PRE}/values/RESUMEN!A:J?key=${API_KEY}`;
-                const urlPed = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PED}/values/Pedidos!A:I?key=${API_KEY}`;
                 
-                const [resPre, resPed] = await Promise.all([fetch(urlPre), fetch(urlPed)]);
+                // 2. URL Proxy para la API de pedidos (Bypass seguro HTTPS -> HTTP)
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL_PEDIDOS);
+
+                const [resPre, resPed] = await Promise.all([fetch(urlPre), fetch(proxyUrl)]);
                 
-                if (!resPre.ok || !resPed.ok) throw new Error(`Error de conexión con Sheets.`);
+                if (!resPre.ok) throw new Error(`Error de conexión con Sheets Presupuestos.`);
+                if (!resPed.ok) throw new Error(`Error de conexión con la API de Informax.`);
                 
                 const dataPre = await resPre.json();
-                const dataPed = await resPed.json();
+                apiPedidos = await resPed.json(); // API pura
                 
                 allRegistros = parseGoogleSheetsPresupuestos(dataPre);
-                allPedidos = parseGoogleSheetsPedidos(dataPed);
 
-                // Grupos de clientes combinados de ambos archivos
+                // Llenar selectores SOLO con los datos que tenemos mapeados en Presupuestos
                 setupCustomDropdown('groupInput', 'groupList', () => {
-                    const combinedGroups = [...allRegistros.map(r => r.grupoCliente), ...allPedidos.map(p => p.grupoCliente)].filter(g => g);
-                    return [...new Set(combinedGroups)].sort();
+                    return [...new Set(allRegistros.map(r => r.grupoCliente).filter(g => g))].sort();
                 });
 
-                // Clientes en cascada combinados de ambos archivos
                 setupCustomDropdown('clientInput', 'clientList', () => {
                     const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
-                    
                     const validPre = allRegistros.filter(row => !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal)).map(r => r.cliente);
-                    const validPed = allPedidos.filter(row => !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal)).map(p => p.cliente);
-                    
-                    const validClients = [...validPre, ...validPed].filter(c => c);
-                    return [...new Set(validClients)].sort();
+                    return [...new Set(validPre)].sort();
                 });
                 
                 mostrarMensajeInicial(); 
             } catch (error) {
                 console.error(error);
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ Error al cargar. Asegúrate de tener conexión.</td></tr>`;
+                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
             }
         }
 
@@ -390,43 +378,27 @@
             return registros;
         }
 
-        function parseGoogleSheetsPedidos(data) {
-            const rows = data.values;
-            if (!rows || rows.length < 2) return [];
-
-            const headers = rows[0].map(c => removeAccents((c || '').trim().toLowerCase()));
-            const indices = {
-                clienteIdx: getColIndex(headers, ['cliente']),
-                grupoIdx: getColIndex(headers, ['grupo de clientes', 'grupo cliente']),
-                fechaIdx: getColIndex(headers, ['fecha sistema']),
-                importeIdx: getColIndex(headers, ['importe'])
-            };
-
-            const registros = [];
-            for (let i = 1; i < rows.length; i++) {
-                const r = rows[i];
-                if (!r || r.length === 0) continue;
-
-                const fechaSistema = indices.fechaIdx !== -1 ? (r[indices.fechaIdx] || '') : '';
-                let importeNum = 0;
-                if (indices.importeIdx !== -1 && r[indices.importeIdx]) {
-                    let raw = String(r[indices.importeIdx]).replace(/[^\d,\.-]/g, '');
-                    importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
+        // Obtiene los IDs de los clientes basados en los filtros de la web
+        function getValidClientIDs(clientVal, groupVal) {
+            let validIds = new Set();
+            allRegistros.forEach(row => {
+                const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
+                const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
+                
+                if (matchClient && matchGroup && row.cliente) {
+                    // Extrae el ID (ej: "1681" de "1681 - ATUNSA")
+                    const parts = row.cliente.split('-');
+                    if (parts.length > 0) {
+                        validIds.add(parts[0].trim());
+                    }
                 }
-
-                registros.push({
-                    cliente: indices.clienteIdx !== -1 ? (r[indices.clienteIdx] || '') : '',
-                    grupoCliente: indices.grupoIdx !== -1 ? (r[indices.grupoIdx] || '') : '',
-                    fechaParsed: parseSheetDate(fechaSistema),
-                    importe: importeNum
-                });
-            }
-            return registros;
+            });
+            return Array.from(validIds);
         }
 
         function mostrarMensajeInicial() {
             resetDashboard();
-            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Utiliza los selectores de arriba para buscar presupuestos y pedidos.</td></tr>';
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Utiliza los selectores de arriba para buscar.</td></tr>';
             document.getElementById('summaryBody').innerHTML = msj;
             document.getElementById('detailBody').innerHTML = msj;
         }
@@ -444,10 +416,10 @@
         function applyFilters() {
             const clientVal = removeAccents(document.getElementById('clientInput').value.toLowerCase().trim());
             const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
-            
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
+            // Si está todo vacío, resetear
             if (!clientVal && !groupVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
@@ -457,7 +429,7 @@
             let endDate = endVal ? new Date(endVal) : null;
             if (endDate) endDate.setHours(23, 59, 59, 999);
 
-            // Filtrar PRESUPUESTOS
+            // 1. FILTRAR PRESUPUESTOS
             currentFilteredPre = allRegistros.filter(row => {
                 const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
                 const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
@@ -477,22 +449,58 @@
                 return b.fechaInicioParsed - a.fechaInicioParsed;
             });
 
-            // Filtrar PEDIDOS
-            currentFilteredPed = allPedidos.filter(row => {
-                const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
-                const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
+            // 2. FILTRAR PEDIDOS (DIRECTOS DE LA API)
+            const validClientIDs = getValidClientIDs(clientVal, groupVal);
+            
+            let totalPed = 0;
+            let importeTotalPed = 0;
 
-                let matchesDate = true;
-                if (startDate || endDate) {
-                    if (row.fechaParsed) {
-                        if (startDate && row.fechaParsed < startDate) matchesDate = false;
-                        if (endDate && row.fechaParsed > endDate) matchesDate = false;
-                    } else { matchesDate = false; }
+            apiPedidos.forEach(pedido => {
+                const pedidoClientId = String(pedido["CNOPCL"]).trim();
+                
+                // Si el filtro está vacío, o el ID del pedido coincide con los clientes filtrados
+                const pasaFiltroCliente = (!clientVal && !groupVal) || validClientIDs.includes(pedidoClientId);
+
+                if (pasaFiltroCliente) {
+                    let matchesDate = true;
+                    if (startDate || endDate) {
+                        const dateStr = String(pedido["FECPCL"] || "").split(" ")[0];
+                        const pDate = parseSheetDate(dateStr); 
+                        
+                        if (pDate) {
+                            if (startDate && pDate < startDate) matchesDate = false;
+                            if (endDate && pDate > endDate) matchesDate = false;
+                        } else {
+                            matchesDate = false;
+                        }
+                    }
+
+                    if (matchesDate) {
+                        totalPed++;
+                        
+                        // Parseo seguro de la API para el importe (BAS1PCL)
+                        let importeNum = 0;
+                        const valAPI = pedido["BAS1PCL"];
+                        
+                        if (typeof valAPI === 'number') {
+                            importeNum = valAPI;
+                        } else if (typeof valAPI === 'string') {
+                            if (valAPI.includes(',') && valAPI.includes('.')) {
+                                importeNum = parseFloat(valAPI.replace(/\./g, '').replace(',', '.'));
+                            } else if (valAPI.includes(',')) {
+                                importeNum = parseFloat(valAPI.replace(',', '.'));
+                            } else {
+                                importeNum = parseFloat(valAPI);
+                            }
+                        }
+                        
+                        importeTotalPed += (importeNum || 0);
+                    }
                 }
-                return matchClient && matchGroup && matchesDate;
             });
 
-            updateDashboard(currentFilteredPre, currentFilteredPed);
+            // 3. ACTUALIZAR INTERFAZ
+            updateDashboard(currentFilteredPre, totalPed, importeTotalPed);
             renderSummary(currentFilteredPre);
             renderDetail(currentFilteredPre);
         }
@@ -512,8 +520,8 @@
             renderDetail(currentFilteredPre);
         }
 
-        function updateDashboard(dataPre, dataPed) {
-            let totalPre = dataPre.length;
+        function updateDashboard(dataPre, totalPed, importeTotalPed) {
+            let totalPreCount = dataPre.length;
             let fueraPlazo = 0;
             let aceptados = 0;
             let importeProcesado = 0;
@@ -525,16 +533,12 @@
                 if (row.dias > DIAS_LIMITE) fueraPlazo++;
             });
 
-            document.getElementById('kpiTotal').textContent = totalPre;
+            document.getElementById('kpiTotal').textContent = totalPreCount;
             document.getElementById('kpiFueraPlazo').textContent = fueraPlazo;
             document.getElementById('kpiAceptados').textContent = aceptados;
             document.getElementById('kpiImporteProcesado').textContent = fmtMoneda.format(importeProcesado);
 
-            // Totalizadores de PEDIDOS
-            let totalPed = dataPed.length;
-            let importeTotalPed = 0;
-            dataPed.forEach(row => importeTotalPed += row.importe);
-            
+            // Mostrar el total de los pedidos procesados de la API
             document.getElementById('kpiTotalPedidos').textContent = totalPed;
             document.getElementById('kpiImportePedidos').textContent = fmtMoneda.format(importeTotalPed);
         }

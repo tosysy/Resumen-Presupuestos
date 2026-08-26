@@ -144,7 +144,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryBody">
-                        <tr><td colspan="8" class="loading">Descargando base de datos...</td></tr>
+                        <tr><td colspan="8" class="loading">Descargando bases de datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -182,7 +182,7 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="10" class="loading">Descargando base de datos...</td></tr>
+                        <tr><td colspan="10" class="loading">Descargando bases de datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -261,10 +261,32 @@
             });
         }
 
+        // FUNCIÓN MEJORADA: Entiende fechas con barras (/) y guiones (-)
         function parseSheetDate(dateStr) {
-            if (!dateStr || dateStr.trim() === '') return null;
-            const parts = dateStr.split('/');
-            if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+            if (!dateStr || String(dateStr).trim() === '') return null;
+            const str = String(dateStr).trim();
+            
+            // Si la fecha viene con barras (ej: 21/08/2026)
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+            
+            // Si la fecha viene con guiones del ERP (ej: 2026-08-21 o 21-08-2026)
+            if (str.includes('-')) {
+                const parts = str.split('-');
+                if (parts.length === 3) {
+                    // Si empieza por el año (YYYY-MM-DD)
+                    if (parts[0].length === 4) {
+                        return new Date(parts[0], parts[1] - 1, parts[2]);
+                    } 
+                    // Si empieza por el día (DD-MM-YYYY)
+                    else {
+                        return new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                }
+            }
+            
             return null; 
         }
 
@@ -304,7 +326,7 @@
                 mostrarMensajeInicial(); 
             } catch (error) {
                 console.error(error);
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ Error al cargar.</td></tr>`;
+                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ Error al cargar. Asegúrate de tener conexión.</td></tr>`;
             }
         }
 

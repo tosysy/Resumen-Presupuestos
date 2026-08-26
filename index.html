@@ -17,137 +17,43 @@
             --warning: #f59e0b;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
         h2 { margin-top: 0; color: var(--primary); font-size: 20px; }
 
         /* --- FILTROS --- */
-        .filters-section {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-end;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .input-group label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-        }
-
-        input {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-        }
+        .filters-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .input-group label { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
         input:focus { outline: none; border-color: var(--secondary); }
 
         /* --- DASHBOARD STATS --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
-            display: flex;
-            flex-direction: column;
-        }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); display: flex; flex-direction: column; }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
-
-        .stat-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: #0f172a;
-        }
+        .stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
 
         /* --- TABLAS --- */
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            overflow: hidden;
-            padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th {
-            background: var(--primary);
-            color: white;
-            padding: 12px 10px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-            color: #475569;
-        }
-
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); color: #475569; }
         tr:hover td { background-color: #f8fafc; }
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .bold { font-weight: bold; color: var(--primary); }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
         .loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
         .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--secondary); font-weight: bold; }
+
+        /* --- BOTONES ORDENACIÓN --- */
+        .sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
+        .sort-btn:hover { color: #fff; }
     </style>
 </head>
 <body>
@@ -157,7 +63,7 @@
         <div class="filters-section">
             <div class="input-group">
                 <label>Cliente o Grupo</label>
-                <input type="text" id="searchInput" placeholder="Buscar por cliente o grupo...">
+                <input type="text" id="searchInput" placeholder="Buscar por cliente, grupo u oferta...">
             </div>
             <div class="input-group">
                 <label>Fecha Inicio (Desde)</label>
@@ -223,21 +129,33 @@
                             <th>Operario</th>
                             <th>Barco</th>
                             <th>Nº Oferta</th>
-                            <th>Fecha Inicio</th>
-                            <th>Días</th>
+                            <th>
+                                Fecha Inicio
+                                <button class="sort-btn" onclick="sortData('fechaInicioParsed', 'asc')">↑</button>
+                                <button class="sort-btn" onclick="sortData('fechaInicioParsed', 'desc')">↓</button>
+                            </th>
+                            <th>
+                                Días
+                                <button class="sort-btn" onclick="sortData('dias', 'asc')">↑</button>
+                                <button class="sort-btn" onclick="sortData('dias', 'desc')">↓</button>
+                            </th>
+                            <th>Fecha Envío</th>
                             <th>Estado</th>
                             <th>Cliente</th>
                             <th>Grupo Cliente</th>
-                            <th class="text-right">Importe</th>
+                            <th class="text-right">
+                                Importe
+                                <button class="sort-btn" onclick="sortData('importe', 'asc')">↑</button>
+                                <button class="sort-btn" onclick="sortData('importe', 'desc')">↓</button>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="9" class="loading">Cargando base de datos en segundo plano...</td></tr>
+                        <tr><td colspan="10" class="loading">Cargando base de datos en segundo plano...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -246,7 +164,7 @@
         const API_KEY = 'AIzaSyDOjxTMxlPAGOEayC0JwD28mx21zd6xkk8'; 
         const SHEET_NAME = 'RESUMEN';
         
-        // CRITERIO PARA FUERA DE PLAZO (Basado en E:E > 5)
+        // CRITERIO PARA FUERA DE PLAZO (Basado en tu fórmula: E:E > 5)
         const DIAS_LIMITE = 5;
 
         let allRegistros = [];
@@ -255,6 +173,9 @@
         // Formateadores
         const fmtMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
         const fmtPorcentaje = (num) => (isNaN(num) ? '0.00%' : (num * 100).toFixed(2) + '%');
+
+        // Función para quitar tildes y facilitar búsquedas
+        const removeAccents = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -276,19 +197,16 @@
                 const response = await fetch(url);
                 
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Error 404: No se encuentra la pestaña o el documento no es público (Cualquier persona con el enlace).');
-                    }
+                    if (response.status === 404) throw new Error('Error 404: No se encuentra la pestaña o el documento no es público.');
                     throw new Error('Error de conexión con Sheets.');
                 }
                 
                 const data = await response.json();
                 allRegistros = parseGoogleSheets(data);
                 
-                // Mostrar pantalla de espera interactiva
                 mostrarMensajeInicial(); 
             } catch (error) {
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="9" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
+                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
                 document.getElementById('summaryBody').innerHTML = `<tr><td colspan="8" class="loading" style="color:red;">❌ Error al cargar datos</td></tr>`;
             }
         }
@@ -297,10 +215,12 @@
             const rows = data.sheets[0].data[0].rowData;
             if (!rows || rows.length < 2) return [];
 
-            const headers = rows[0].values.map(c => (c.formattedValue || '').trim().toLowerCase());
+            // Limpiamos cabeceras de tildes y mayúsculas para no fallar nunca
+            const headers = rows[0].values.map(c => removeAccents((c.formattedValue || '').trim().toLowerCase()));
             const getCol = (names) => {
                 for (let n of names) {
-                    const idx = headers.findIndex(h => h === n || h.includes(n));
+                    const cleanName = removeAccents(n.toLowerCase());
+                    const idx = headers.findIndex(h => h === cleanName || h.includes(cleanName));
                     if (idx !== -1) return idx;
                 }
                 return -1;
@@ -310,7 +230,8 @@
             const barcoIdx = getCol(['barco']);
             const ofertaIdx = getCol(['nº oferta', 'oferta']);
             const fInicioIdx = getCol(['fecha inicio']);
-            const diasIdx = getCol(['días desde inicio', 'días']);
+            const diasIdx = getCol(['dias desde inicio', 'dias']); // Sin tilde gracias a removeAccents
+            const fEnvioIdx = getCol(['fecha de envio', 'fecha envio']); 
             const estadoIdx = getCol(['estado']);
             const clienteIdx = getCol(['cliente']);
             const grupoIdx = getCol(['grupo cliente']);
@@ -344,6 +265,7 @@
                     oferta: r[ofertaIdx]?.formattedValue || '',
                     fechaInicio: fechaInicio,
                     fechaInicioParsed: parseSheetDate(fechaInicio),
+                    fechaEnvio: fEnvioIdx !== -1 ? (r[fEnvioIdx]?.formattedValue || '') : '',
                     dias: diasNumericos,
                     estado: r[estadoIdx]?.formattedValue || '',
                     cliente: r[clienteIdx]?.formattedValue || '',
@@ -354,10 +276,9 @@
             return registros;
         }
 
-        // --- LÓGICA DE RENDERIZADO DIFERIDO ---
         function mostrarMensajeInicial() {
             resetDashboard();
-            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos desde Sheets. Escribe un cliente o selecciona una fecha para ver los resultados.</td></tr>';
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos desde Sheets. Escribe un cliente o selecciona fechas para ver los resultados.</td></tr>';
             document.getElementById('summaryBody').innerHTML = msj;
             document.getElementById('detailBody').innerHTML = msj;
         }
@@ -370,11 +291,10 @@
         }
 
         function applyFilters() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchVal = removeAccents(document.getElementById('searchInput').value.toLowerCase().trim());
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
-            // Si los 3 campos están vacíos, pedimos que filtren
             if (!searchVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
@@ -386,9 +306,9 @@
 
             currentFiltered = allRegistros.filter(row => {
                 const matchesSearch = !searchVal || (
-                    row.cliente.toLowerCase().includes(searchVal) ||
-                    row.grupoCliente.toLowerCase().includes(searchVal) ||
-                    row.oferta.toLowerCase().includes(searchVal)
+                    removeAccents(row.cliente.toLowerCase()).includes(searchVal) ||
+                    removeAccents(row.grupoCliente.toLowerCase()).includes(searchVal) ||
+                    removeAccents(row.oferta.toLowerCase()).includes(searchVal)
                 );
 
                 let matchesDate = true;
@@ -403,8 +323,33 @@
                 return matchesSearch && matchesDate;
             });
 
+            // Por defecto ordenamos por fecha descendente
+            currentFiltered.sort((a, b) => {
+                if (!a.fechaInicioParsed) return 1;
+                if (!b.fechaInicioParsed) return -1;
+                return b.fechaInicioParsed - a.fechaInicioParsed;
+            });
+
             updateDashboard(currentFiltered);
             renderSummary(currentFiltered);
+            renderDetail(currentFiltered);
+        }
+
+        // --- SISTEMA DE ORDENACIÓN ---
+        function sortData(column, order) {
+            if(currentFiltered.length === 0) return;
+
+            currentFiltered.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+
+                if (valA === null || valA === '') return 1;
+                if (valB === null || valB === '') return -1;
+
+                if (valA < valB) return order === 'asc' ? -1 : 1;
+                if (valA > valB) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
             renderDetail(currentFiltered);
         }
 
@@ -422,10 +367,7 @@
                     importeAceptados += row.importe;
                 }
                 
-                // FUERA DE PLAZO: Mayor que 5 días
-                if (row.dias > DIAS_LIMITE) {
-                    fueraPlazo++;
-                }
+                if (row.dias > DIAS_LIMITE) fueraPlazo++;
             });
 
             document.getElementById('kpiTotal').textContent = total;
@@ -447,9 +389,7 @@
             data.forEach(row => {
                 const usr = row.operario || 'Sin Asignar';
                 if (!stats[usr]) {
-                    stats[usr] = {
-                        totalCount: 0, sumDias: 0, fueraPlazo: 0, aceptados: 0, importeTotal: 0, importeAceptados: 0
-                    };
+                    stats[usr] = { totalCount: 0, sumDias: 0, fueraPlazo: 0, aceptados: 0, importeTotal: 0, importeAceptados: 0 };
                 }
                 
                 const s = stats[usr];
@@ -462,10 +402,7 @@
                     s.aceptados++;
                     s.importeAceptados += row.importe;
                 }
-                
-                if (row.dias > DIAS_LIMITE) {
-                    s.fueraPlazo++;
-                }
+                if (row.dias > DIAS_LIMITE) s.fueraPlazo++;
             });
 
             const sortedUsers = Object.keys(stats).sort((a, b) => stats[b].totalCount - stats[a].totalCount);
@@ -494,11 +431,10 @@
             body.innerHTML = '';
 
             if (data.length === 0) {
-                body.innerHTML = '<tr><td colspan="9" class="text-center">No se encontraron resultados</td></tr>';
+                body.innerHTML = '<tr><td colspan="10" class="text-center">No se encontraron resultados</td></tr>';
                 return;
             }
 
-            // Mostrar máximo 500 filas en detalle
             const limit = Math.min(data.length, 500);
             
             for (let i = 0; i < limit; i++) {
@@ -515,7 +451,8 @@
                     <td>${row.barco}</td>
                     <td>${row.oferta}</td>
                     <td>${row.fechaInicio}</td>
-                    <td>${row.dias}</td>
+                    <td class="text-center">${row.dias}</td>
+                    <td>${row.fechaEnvio}</td>
                     <td><span class="status-badge" style="background:${bgColor}; color:${color}">${row.estado}</span></td>
                     <td>${row.cliente}</td>
                     <td>${row.grupoCliente}</td>
@@ -526,7 +463,7 @@
 
             if (data.length > 500) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="9" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para afinar.</td>`;
+                tr.innerHTML = `<td colspan="10" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para afinar.</td>`;
                 body.appendChild(tr);
             }
         }

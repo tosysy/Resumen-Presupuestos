@@ -23,10 +23,21 @@
 
         /* --- FILTROS --- */
         .filters-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
         .input-group label { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; }
         input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
         input:focus { outline: none; border-color: var(--secondary); }
+
+        /* --- SELECTORES DESPLEGABLES (CUSTOM SELECT) --- */
+        .custom-select { position: relative; }
+        .options-list {
+            display: none; position: absolute; top: 100%; left: 0; right: 0;
+            background: #fff; border: 1px solid var(--border); border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto;
+            z-index: 10; margin-top: 4px;
+        }
+        .option-item { padding: 8px 12px; cursor: pointer; font-size: 13px; color: #475569; }
+        .option-item:hover { background-color: #f1f5f9; color: var(--primary); font-weight: 500; }
 
         /* --- DASHBOARD STATS --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
@@ -61,14 +72,28 @@
     <div class="container">
         <!-- FILTROS -->
         <div class="filters-section">
-            <div class="input-group">
-                <label>Cliente o Grupo</label>
-                <input type="text" id="searchInput" placeholder="Buscar por cliente, grupo u oferta...">
+            <div class="input-group custom-select">
+                <label>Cliente</label>
+                <input type="text" id="clientInput" placeholder="Selecciona o escribe..." autocomplete="off">
+                <div class="options-list" id="clientList"></div>
             </div>
+            
+            <div class="input-group custom-select">
+                <label>Grupo Cliente</label>
+                <input type="text" id="groupInput" placeholder="Selecciona o escribe..." autocomplete="off">
+                <div class="options-list" id="groupList"></div>
+            </div>
+
+            <div class="input-group" style="flex: 0.5;">
+                <label>Nº Oferta</label>
+                <input type="text" id="ofertaInput" placeholder="Ej: 1234">
+            </div>
+
             <div class="input-group">
                 <label>Fecha Inicio (Desde)</label>
                 <input type="date" id="startDateInput">
             </div>
+            
             <div class="input-group">
                 <label>Fecha Inicio (Hasta)</label>
                 <input type="date" id="endDateInput">
@@ -113,7 +138,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryBody">
-                        <tr><td colspan="8" class="loading">Descargando datos súper rápidos...</td></tr>
+                        <tr><td colspan="8" class="loading">Descargando base de datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -151,7 +176,7 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="10" class="loading">Descargando datos súper rápidos...</td></tr>
+                        <tr><td colspan="10" class="loading">Descargando base de datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -168,6 +193,8 @@
 
         let allRegistros = [];
         let currentFiltered = [];
+        let uniqueClients = [];
+        let uniqueGroups = [];
 
         const fmtMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
         const fmtPorcentaje = (num) => (isNaN(num) ? '0.00%' : (num * 100).toFixed(2) + '%');
@@ -175,10 +202,63 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
-            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            
+            // Listeners normales
+            document.getElementById('ofertaInput').addEventListener('input', applyFilters);
             document.getElementById('startDateInput').addEventListener('change', applyFilters);
             document.getElementById('endDateInput').addEventListener('change', applyFilters);
+
+            // Cerrar desplegables al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const clientList = document.getElementById('clientList');
+                const groupList = document.getElementById('groupList');
+                if (!e.target.closest('#clientInput') && !e.target.closest('#clientList')) clientList.style.display = 'none';
+                if (!e.target.closest('#groupInput') && !e.target.closest('#groupList')) groupList.style.display = 'none';
+            });
         });
+
+        // Configuración de los Dropdowns Personalizados
+        function setupCustomDropdown(inputId, listId, items) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            function renderOptions(filterText = "") {
+                list.innerHTML = "";
+                const cleanFilter = removeAccents(filterText.toLowerCase().trim());
+                
+                const filtered = items.filter(item => 
+                    removeAccents(item.toLowerCase()).includes(cleanFilter)
+                );
+
+                if (filtered.length === 0) {
+                    list.innerHTML = '<div class="option-item" style="color:#999; cursor:default;">No hay resultados</div>';
+                    return;
+                }
+
+                filtered.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item';
+                    div.textContent = item;
+                    div.onclick = () => {
+                        input.value = item;
+                        list.style.display = 'none';
+                        applyFilters();
+                    };
+                    list.appendChild(div);
+                });
+            }
+
+            input.addEventListener('focus', () => {
+                renderOptions(input.value);
+                list.style.display = 'block';
+            });
+
+            input.addEventListener('input', () => {
+                renderOptions(input.value);
+                list.style.display = 'block';
+                applyFilters(); // Aplica el filtro en vivo mientras escribes
+            });
+        }
 
         function parseSheetDate(dateStr) {
             if (!dateStr || dateStr.trim() === '') return null;
@@ -189,35 +269,31 @@
 
         async function loadData() {
             try {
-                // CAMBIO CLAVE: Usamos el endpoint values/get para traernos SOLO el texto. Nada de formatos visuales.
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:J?key=${API_KEY}`;
-                console.log("Haciendo petición ultra rápida a la API:", url);
-                
                 const response = await fetch(url);
                 
-                if (!response.ok) {
-                    if (response.status === 404) throw new Error('Error 404: No se encuentra la pestaña o el documento no es público.');
-                    throw new Error(`Error de conexión con Sheets. Status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Error de conexión con Sheets.`);
                 
                 const data = await response.json();
                 allRegistros = parseGoogleSheets(data);
+
+                // Extraer listas únicas y ordenadas para los desplegables
+                uniqueClients = [...new Set(allRegistros.map(r => r.cliente).filter(c => c))].sort();
+                uniqueGroups = [...new Set(allRegistros.map(r => r.grupoCliente).filter(g => g))].sort();
+                
+                setupCustomDropdown('clientInput', 'clientList', uniqueClients);
+                setupCustomDropdown('groupInput', 'groupList', uniqueGroups);
                 
                 mostrarMensajeInicial(); 
             } catch (error) {
                 console.error(error);
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
-                document.getElementById('summaryBody').innerHTML = `<tr><td colspan="8" class="loading" style="color:red;">❌ Error al cargar datos</td></tr>`;
+                document.getElementById('detailBody').innerHTML = `<tr><td colspan="10" class="loading" style="color:red;">❌ Error al cargar.</td></tr>`;
             }
         }
 
         function parseGoogleSheets(data) {
-            // Con el nuevo endpoint, los datos vienen limpios en un array dentro de data.values
             const rows = data.values;
-            
-            if (!rows || rows.length < 2) {
-                return [];
-            }
+            if (!rows || rows.length < 2) return [];
 
             const headers = rows[0].map(c => removeAccents((c || '').trim().toLowerCase()));
 
@@ -251,7 +327,6 @@
 
                 const operario = indices.operarioIdx !== -1 ? (r[indices.operarioIdx] || '') : '';
                 const barco = indices.barcoIdx !== -1 ? (r[indices.barcoIdx] || '') : '';
-                
                 if (!operario && !barco) continue; 
 
                 const fechaInicio = indices.fInicioIdx !== -1 ? (r[indices.fInicioIdx] || '') : '';
@@ -259,7 +334,6 @@
                 
                 let importeNum = 0;
                 if (indices.importeIdx !== -1 && r[indices.importeIdx]) {
-                    // Limpiamos todo lo que no sea número, punto o coma (ej: "1.500,25 €" -> "1500.25")
                     let raw = String(r[indices.importeIdx]).replace(/[^\d,\.-]/g, '');
                     importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
                 }
@@ -283,7 +357,7 @@
 
         function mostrarMensajeInicial() {
             resetDashboard();
-            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos desde Sheets. Escribe un cliente o selecciona fechas para ver los resultados.</td></tr>';
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Utiliza los selectores de arriba para buscar presupuestos.</td></tr>';
             document.getElementById('summaryBody').innerHTML = msj;
             document.getElementById('detailBody').innerHTML = msj;
         }
@@ -296,11 +370,15 @@
         }
 
         function applyFilters() {
-            const searchVal = removeAccents(document.getElementById('searchInput').value.toLowerCase().trim());
+            const clientVal = removeAccents(document.getElementById('clientInput').value.toLowerCase().trim());
+            const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
+            const ofertaVal = removeAccents(document.getElementById('ofertaInput').value.toLowerCase().trim());
+            
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
-            if (!searchVal && !startVal && !endVal) {
+            // Si todo está vacío, mostramos el mensaje por defecto
+            if (!clientVal && !groupVal && !ofertaVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
             }
@@ -310,11 +388,9 @@
             if (endDate) endDate.setHours(23, 59, 59, 999);
 
             currentFiltered = allRegistros.filter(row => {
-                const matchesSearch = !searchVal || (
-                    removeAccents(row.cliente.toLowerCase()).includes(searchVal) ||
-                    removeAccents(row.grupoCliente.toLowerCase()).includes(searchVal) ||
-                    removeAccents(row.oferta.toLowerCase()).includes(searchVal)
-                );
+                const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
+                const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
+                const matchOferta = !ofertaVal || removeAccents(row.oferta.toLowerCase()).includes(ofertaVal);
 
                 let matchesDate = true;
                 if (startDate || endDate) {
@@ -325,9 +401,10 @@
                         matchesDate = false;
                     }
                 }
-                return matchesSearch && matchesDate;
+                return matchClient && matchGroup && matchOferta && matchesDate;
             });
 
+            // Orden por defecto: los más recientes primero
             currentFiltered.sort((a, b) => {
                 if (!a.fechaInicioParsed) return 1;
                 if (!b.fechaInicioParsed) return -1;
@@ -364,12 +441,10 @@
 
             data.forEach(row => {
                 const est = row.estado.toLowerCase();
-                
                 if (est.includes('aceptado')) {
                     aceptados++;
                     importeAceptados += row.importe;
                 }
-                
                 if (row.dias > DIAS_LIMITE) fueraPlazo++;
             });
 

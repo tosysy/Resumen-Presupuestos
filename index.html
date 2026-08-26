@@ -14,6 +14,7 @@
             --border: #e2e8f0;
             --danger: #ef4444;
             --success: #22c55e;
+            --warning: #f59e0b;
         }
 
         body {
@@ -67,6 +68,41 @@
         }
         input:focus { outline: none; border-color: var(--secondary); }
 
+        /* --- DASHBOARD STATS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card.danger { border-left-color: var(--danger); }
+        .stat-card.success { border-left-color: var(--success); }
+
+        .stat-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
         /* --- TABLAS --- */
         .card {
             background: var(--card-bg);
@@ -102,7 +138,6 @@
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
-        
         .bold { font-weight: bold; color: var(--primary); }
 
         .status-badge {
@@ -111,7 +146,8 @@
             font-size: 11px;
             font-weight: bold;
         }
-        .loading { padding: 30px; text-align: center; font-size: 16px; color: #64748b; }
+        .loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
+        .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--secondary); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -134,6 +170,26 @@
             </div>
         </div>
 
+        <!-- DASHBOARD (KPIs) -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Presupuestos Filtrados</div>
+                <div class="stat-value" id="kpiTotal">0</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-title">Fuera de Plazo</div>
+                <div class="stat-value" id="kpiFueraPlazo">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-title">Aceptados (Cant.)</div>
+                <div class="stat-value" id="kpiAceptados">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-title">Aceptados (Importe)</div>
+                <div class="stat-value" id="kpiImporteAceptados">0,00 €</div>
+            </div>
+        </div>
+
         <!-- TABLA RESUMEN POR USUARIO -->
         <div class="card">
             <h2>📊 Resumen por Usuario</h2>
@@ -142,8 +198,8 @@
                     <thead>
                         <tr>
                             <th>USUARIO</th>
-                            <th class="text-center">MEDIA DÍAS EN PRESENTAR</th>
-                            <th class="text-center">CANTIDAD PRESUPUESTOS</th>
+                            <th class="text-center">MEDIA DÍAS</th>
+                            <th class="text-center">CANTIDAD</th>
                             <th class="text-center">FUERA DE PLAZO</th>
                             <th class="text-center">% FUERA DE PLAZO</th>
                             <th class="text-center">ACEPTADOS</th>
@@ -152,7 +208,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryBody">
-                        <tr><td colspan="8" class="loading">Cargando estadísticas...</td></tr>
+                        <tr><td colspan="8" class="loading">Cargando base de datos en segundo plano...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -177,7 +233,7 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="9" class="loading">Cargando datos desde Sheets...</td></tr>
+                        <tr><td colspan="9" class="loading">Cargando base de datos en segundo plano...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -219,14 +275,21 @@
             try {
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?ranges=${SHEET_NAME}&includeGridData=true&key=${API_KEY}`;
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('Error de conexión o permisos en Sheets.');
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Error 404: No se encuentra la pestaña. Comprueba que se llama exactamente "RESUMEN" y que el enlace de Sheets está puesto como "Cualquier persona con el enlace puede leer".');
+                    }
+                    throw new Error('Error de conexión o permisos en Sheets.');
+                }
                 
                 const data = await response.json();
                 allRegistros = parseGoogleSheets(data);
                 
-                applyFilters(); 
+                // Cuando termina de cargar, no mostramos nada hasta que el usuario filtre
+                mostrarMensajeInicial(); 
             } catch (error) {
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="9" class="loading" style="color:red;">❌ Error: ${error.message}</td></tr>`;
+                document.getElementById('detailBody').innerHTML = `<tr><td colspan="9" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
                 document.getElementById('summaryBody').innerHTML = `<tr><td colspan="8" class="loading" style="color:red;">❌ Error al cargar datos</td></tr>`;
             }
         }
@@ -292,10 +355,31 @@
             return registros;
         }
 
+        // --- LÓGICA DE RENDERIZADO DIFERIDO ---
+        function mostrarMensajeInicial() {
+            resetDashboard();
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Escribe un cliente o selecciona una fecha para ver los resultados.</td></tr>';
+            document.getElementById('summaryBody').innerHTML = msj;
+            document.getElementById('detailBody').innerHTML = msj;
+        }
+
+        function resetDashboard() {
+            document.getElementById('kpiTotal').textContent = '0';
+            document.getElementById('kpiFueraPlazo').textContent = '0';
+            document.getElementById('kpiAceptados').textContent = '0';
+            document.getElementById('kpiImporteAceptados').textContent = '0,00 €';
+        }
+
         function applyFilters() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
+
+            // Si los 3 campos están vacíos, vaciamos la tabla y pedimos que filtren
+            if (!searchVal && !startVal && !endVal) {
+                mostrarMensajeInicial();
+                return;
+            }
 
             const startDate = startVal ? new Date(startVal) : null;
             let endDate = endVal ? new Date(endVal) : null;
@@ -304,7 +388,8 @@
             currentFiltered = allRegistros.filter(row => {
                 const matchesSearch = !searchVal || (
                     row.cliente.toLowerCase().includes(searchVal) ||
-                    row.grupoCliente.toLowerCase().includes(searchVal)
+                    row.grupoCliente.toLowerCase().includes(searchVal) ||
+                    row.oferta.toLowerCase().includes(searchVal)
                 );
 
                 let matchesDate = true;
@@ -319,8 +404,34 @@
                 return matchesSearch && matchesDate;
             });
 
+            updateDashboard(currentFiltered);
             renderSummary(currentFiltered);
             renderDetail(currentFiltered);
+        }
+
+        function updateDashboard(data) {
+            let total = data.length;
+            let fueraPlazo = 0;
+            let aceptados = 0;
+            let importeAceptados = 0;
+
+            data.forEach(row => {
+                const est = row.estado.toLowerCase();
+                
+                if (est.includes('aceptado')) {
+                    aceptados++;
+                    importeAceptados += row.importe;
+                }
+                
+                if (row.dias > DIAS_LIMITE) {
+                    fueraPlazo++;
+                }
+            });
+
+            document.getElementById('kpiTotal').textContent = total;
+            document.getElementById('kpiFueraPlazo').textContent = fueraPlazo;
+            document.getElementById('kpiAceptados').textContent = aceptados;
+            document.getElementById('kpiImporteAceptados').textContent = fmtMoneda.format(importeAceptados);
         }
 
         function renderSummary(data) {
@@ -332,7 +443,6 @@
                 return;
             }
 
-            // Agrupar por operario
             const stats = {};
             data.forEach(row => {
                 const usr = row.operario || 'Sin Asignar';
@@ -358,13 +468,11 @@
                     s.importeAceptados += row.importe;
                 }
                 
-                // LÓGICA DE FUERA DE PLAZO (Basada en tu Excel: E:E > 5)
                 if (row.dias > DIAS_LIMITE) {
                     s.fueraPlazo++;
                 }
             });
 
-            // Ordenar por cantidad de presupuestos descendente
             const sortedUsers = Object.keys(stats).sort((a, b) => stats[b].totalCount - stats[a].totalCount);
 
             sortedUsers.forEach(usr => {
@@ -395,7 +503,11 @@
                 return;
             }
 
-            data.forEach(row => {
+            // Mostrar un máximo de 500 filas en el detalle para no saturar el navegador si el filtro es muy genérico
+            const limit = Math.min(data.length, 500);
+            
+            for (let i = 0; i < limit; i++) {
+                const row = data[i];
                 const tr = document.createElement('tr');
                 
                 let bgColor = '#e2e8f0', color = '#475569';
@@ -415,7 +527,13 @@
                     <td class="text-right bold">${fmtMoneda.format(row.importe)}</td>
                 `;
                 body.appendChild(tr);
-            });
+            }
+
+            if (data.length > 500) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="9" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para ser más específico.</td>`;
+                body.appendChild(tr);
+            }
         }
     </script>
 </body>

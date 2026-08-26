@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador y Resumen de Presupuestos</title>
+    <title>Buscador de Presupuestos (Directo API)</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -17,135 +17,36 @@
             --warning: #f59e0b;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
         h2 { margin-top: 0; color: var(--primary); font-size: 20px; }
 
         /* --- FILTROS --- */
-        .filters-section {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-end;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .input-group label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-        }
-
-        input {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-        }
+        .filters-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .input-group label { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
         input:focus { outline: none; border-color: var(--secondary); }
 
         /* --- DASHBOARD STATS --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
-            display: flex;
-            flex-direction: column;
-        }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); display: flex; flex-direction: column; }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
-
-        .stat-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: #0f172a;
-        }
+        .stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
 
         /* --- TABLAS --- */
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            overflow: hidden;
-            padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th {
-            background: var(--primary);
-            color: white;
-            padding: 12px 10px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-            color: #475569;
-        }
-
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); color: #475569; }
         tr:hover td { background-color: #f8fafc; }
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .bold { font-weight: bold; color: var(--primary); }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
         .loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
         .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--secondary); font-weight: bold; }
     </style>
@@ -153,7 +54,6 @@
 <body>
 
     <div class="container">
-        
         <!-- FILTROS -->
         <div class="filters-section">
             <div class="input-group">
@@ -190,7 +90,7 @@
             </div>
         </div>
 
-        <!-- TABLA RESUMEN POR USUARIO -->
+        <!-- TABLA RESUMEN -->
         <div class="card">
             <h2>📊 Resumen por Usuario</h2>
             <div style="overflow-x: auto;">
@@ -208,7 +108,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryBody">
-                        <tr><td colspan="8" class="loading">Cargando base de datos en segundo plano...</td></tr>
+                        <tr><td colspan="8" class="loading">Conectando con el ERP de Áncora...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -233,132 +133,196 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <tr><td colspan="9" class="loading">Cargando base de datos en segundo plano...</td></tr>
+                        <tr><td colspan="9" class="loading">Conectando con el ERP de Áncora...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const SPREADSHEET_ID = '12Q22Oqf5pD-2NAo9JOOCnTzaiI7Go9DjKuuYAk0MZMA'; 
-        const API_KEY = 'AIzaSyDOjxTMxlPAGOEayC0JwD28mx21zd6xkk8'; 
-        const SHEET_NAME = 'RESUMEN';
+        // --- CONFIGURACIÓN DE APIS (Basado en la imagen y script) ---
+        // USO DE PROXY para evitar bloqueos CORS en navegadores. 
+        // En producción, si la web está en el mismo servidor que el ERP, borra la línea de PROXY.
+        const USE_PROXY = true; 
+        const PROXY_URL = "https://corsproxy.io/?"; 
         
-        // CRITERIO PARA FUERA DE PLAZO (Basado en E:E > 5)
+        function getApiUrl(url) {
+            return USE_PROXY ? PROXY_URL + encodeURIComponent(url) : url;
+        }
+
+        const URL_EMPLEADOS = getApiUrl("http://ancora.informax.es:9697/api/get_users?imax_pass=123");
+        const URL_BARCOS = getApiUrl("http://ancora.informax.es:9697/api//get_ships?imax_pass=123");
+        const URL_GRUPOS = getApiUrl("http://ancora.informax.es:9697/api//get_data?imax_pass=123&table=F_TCL");
+        const URL_CLIENTES = getApiUrl("http://ancora.informax.es:9697/api//get_data?imax_pass=123&table=F_CLI");
+        // Endpoint de RESUMEN (B9)
+        const URL_PRESUPUESTOS = getApiUrl("http://ancora.informax.es:9697/api//get_budgets?imax_pass=123&warehouse=gen&dateIni=2024-08-09&status=1,2,3");
+
         const DIAS_LIMITE = 5;
 
         let allRegistros = [];
         let currentFiltered = [];
 
-        // Formateadores
+        // DICCIONARIOS
+        let repoBarcos = {};
+        let repoEmpl = {};
+        let repoGrupos = {};
+        let repoClientes = {};
+
         const fmtMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
         const fmtPorcentaje = (num) => (isNaN(num) ? '0.00%' : (num * 100).toFixed(2) + '%');
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadData();
+            fetchDataFromAPIs();
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('startDateInput').addEventListener('change', applyFilters);
             document.getElementById('endDateInput').addEventListener('change', applyFilters);
         });
 
-        function parseSheetDate(dateStr) {
-            if (!dateStr || dateStr.trim() === '') return null;
-            const parts = dateStr.split('/');
-            if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
-            return null; 
+        // FUNCIONES DE APOYO DEL APPSCRIPT ORIGINAL
+        function extraerFechaLimpia(s) {
+            if (!s) return null;
+            var texto = s.toString().trim();
+            var matchDMY = texto.match(/^(\d{2})\/(\d{2})\/(\d{2,4})/);
+            if (matchDMY) {
+                var d = parseInt(matchDMY[1], 10);
+                var m = parseInt(matchDMY[2], 10) - 1;
+                var aStr = matchDMY[3];
+                var a = parseInt(aStr, 10);
+                if (aStr.length === 2) a += 2000; 
+                return new Date(a, m, d);
+            }
+            var matchYMD = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (matchYMD) {
+                var a = parseInt(matchYMD[1], 10);
+                var m = parseInt(matchYMD[2], 10) - 1;
+                var d = parseInt(matchYMD[3], 10);
+                return new Date(a, m, d);
+            }
+            return null;
         }
 
-        async function loadData() {
+        function formatJSDateToString(dateObj) {
+            if(!dateObj) return "";
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const y = dateObj.getFullYear();
+            return `${d}/${m}/${y}`;
+        }
+
+        function calcularDiasLaborablesMenosUno(fInicio, fFin) {
+            if (!fInicio || !fFin || isNaN(fInicio.getTime()) || isNaN(fFin.getTime())) return 0;
+            var f1 = new Date(fInicio.getTime()); f1.setHours(0,0,0,0);
+            var f2 = new Date(fFin.getTime()); f2.setHours(0,0,0,0);
+            if (f1 > f2) return 0;
+            var count = 0;
+            var curDate = new Date(f1.getTime());
+            while (curDate <= f2) {
+                var dayOfWeek = curDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) count++;
+                curDate.setDate(curDate.getDate() + 1);
+            }
+            var res = count - 1;
+            return res < 0 ? 0 : res;
+        }
+
+        function traducirEstado(codigo) {
+            var c = (codigo || "").toString().trim().toUpperCase();
+            switch(c) {
+                case "0": case "P": return "Pendiente";
+                case "1": case "E": return "Aceptado";
+                case "2": return "Rechazado";
+                case "3": case "R": return "Enviado";
+                default: return c ? "Estado " + c : "Pendiente";
+            }
+        }
+
+        // CARGA DE DATOS ASÍNCRONA DESDE EL ERP
+        async function fetchDataFromAPIs() {
             try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?ranges=${SHEET_NAME}&includeGridData=true&key=${API_KEY}`;
-                const response = await fetch(url);
+                // Lanzamos todas las peticiones a la vez para que sea súper rápido
+                const [resEmpl, resBarcos, resGrupos, resClientes, resPresupuestos] = await Promise.all([
+                    fetch(URL_EMPLEADOS), fetch(URL_BARCOS), fetch(URL_GRUPOS), fetch(URL_CLIENTES), fetch(URL_PRESUPUESTOS)
+                ]);
+
+                if(!resPresupuestos.ok) throw new Error("Fallo al conectar con el servidor de presupuestos");
+
+                const jsonEmpl = await resEmpl.json();
+                const jsonBarcos = await resBarcos.json();
+                const jsonGrupos = await resGrupos.json();
+                const jsonClientes = await resClientes.json();
+                const jsonPresupuestos = await resPresupuestos.json();
+
+                // 1. Construir Diccionarios
+                jsonEmpl.forEach(e => repoEmpl[e.CODUSU] = e.NOMUSU || e.CODUSU);
+                jsonBarcos.forEach(b => repoBarcos[b.CODBAR] = b.DESBAR || b.CODBAR);
+                jsonGrupos.forEach(g => { if(g.CODTCL) repoGrupos[g.CODTCL.toString()] = g.DESTCL || ""; });
                 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Error 404: No se encuentra la pestaña. Comprueba que se llama exactamente "RESUMEN" y que el enlace de Sheets está puesto como "Cualquier persona con el enlace puede leer".');
+                jsonClientes.forEach(cli => {
+                    if (cli.CODCLI) {
+                        repoClientes[cli.CODCLI.toString().trim()] = {
+                            grupo: cli.TCLCLI || "",
+                            nombre: cli.NOFCLI || cli.CODCLI
+                        };
                     }
-                    throw new Error('Error de conexión o permisos en Sheets.');
-                }
-                
-                const data = await response.json();
-                allRegistros = parseGoogleSheets(data);
-                
-                // Cuando termina de cargar, no mostramos nada hasta que el usuario filtre
-                mostrarMensajeInicial(); 
-            } catch (error) {
-                document.getElementById('detailBody').innerHTML = `<tr><td colspan="9" class="loading" style="color:red;">❌ ${error.message}</td></tr>`;
-                document.getElementById('summaryBody').innerHTML = `<tr><td colspan="8" class="loading" style="color:red;">❌ Error al cargar datos</td></tr>`;
-            }
-        }
-
-        function parseGoogleSheets(data) {
-            const rows = data.sheets[0].data[0].rowData;
-            if (!rows || rows.length < 2) return [];
-
-            const headers = rows[0].values.map(c => (c.formattedValue || '').trim().toLowerCase());
-            const getCol = (names) => {
-                for (let n of names) {
-                    const idx = headers.findIndex(h => h === n || h.includes(n));
-                    if (idx !== -1) return idx;
-                }
-                return -1;
-            };
-
-            const operarioIdx = getCol(['operario']);
-            const barcoIdx = getCol(['barco']);
-            const ofertaIdx = getCol(['nº oferta', 'oferta']);
-            const fInicioIdx = getCol(['fecha inicio']);
-            const diasIdx = getCol(['días desde inicio', 'días']);
-            const estadoIdx = getCol(['estado']);
-            const clienteIdx = getCol(['cliente']);
-            const grupoIdx = getCol(['grupo cliente']);
-            const importeIdx = getCol(['importe']); 
-
-            const registros = [];
-
-            for (let i = 1; i < rows.length; i++) {
-                const r = rows[i].values;
-                if (!r) continue;
-
-                const operario = r[operarioIdx]?.formattedValue || '';
-                if (!operario && !r[barcoIdx]?.formattedValue) continue; 
-
-                const fechaInicio = r[fInicioIdx]?.formattedValue || '';
-                const diasNumericos = parseInt(r[diasIdx]?.formattedValue || '0') || 0;
-                
-                let importeNum = 0;
-                if (r[importeIdx]) {
-                    if (r[importeIdx].effectiveValue && r[importeIdx].effectiveValue.numberValue !== undefined) {
-                        importeNum = r[importeIdx].effectiveValue.numberValue;
-                    } else {
-                        let raw = r[importeIdx].formattedValue || '0';
-                        importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
-                    }
-                }
-
-                registros.push({
-                    operario: operario,
-                    barco: r[barcoIdx]?.formattedValue || '',
-                    oferta: r[ofertaIdx]?.formattedValue || '',
-                    fechaInicio: fechaInicio,
-                    fechaInicioParsed: parseSheetDate(fechaInicio),
-                    dias: diasNumericos,
-                    estado: r[estadoIdx]?.formattedValue || '',
-                    cliente: r[clienteIdx]?.formattedValue || '',
-                    grupoCliente: r[grupoIdx]?.formattedValue || '',
-                    importe: importeNum
                 });
+
+                // 2. Procesar Presupuestos (El equivalente a procesarHojaDirecta)
+                allRegistros = [];
+
+                jsonPresupuestos.forEach(e => {
+                    var tipPre = (e['TIPPRE'] || "").toString().trim().replace(/^0+/, '');
+                    var codPre = (e['CODPRE'] || "").toString().trim();
+                    var nOfertaFinal = tipPre + "/" + codPre;
+                    
+                    let operario = repoEmpl[e["USUPRE"]] || e["USUPRE"] || "";
+                    const barco = repoBarcos[e["PENPRE"]] || e["PENPRE"] || "";
+                    
+                    let fInicioDate = extraerFechaLimpia(e["FECPRE"]);
+                    let fInicioStr = formatJSDateToString(fInicioDate);
+
+                    let textoOriginal = (e["OB1PRE"] || "").toString().substring(0, 10); 
+                    let fEnvioDate = extraerFechaLimpia(textoOriginal);
+                    let diasLab = calcularDiasLaborablesMenosUno(fInicioDate, fEnvioDate);
+                    
+                    let idCliente = (e["CLIPRE"] || "").toString().trim();
+                    let infoCli = repoClientes[idCliente] || null;
+                    
+                    let nombreCliente = infoCli ? (infoCli.nombre || idCliente) : idCliente;
+                    let idGrupo = infoCli ? (infoCli.grupo || "") : "";
+                    let nombreGrupo = repoGrupos[idGrupo] || "";
+                    
+                    let importeRaw = (e["NET1PRE"] || "0").toString();
+                    let importeNum = parseFloat(importeRaw.replace(/\./g, '').replace(',', '.')) || 0;
+                    
+                    allRegistros.push({
+                        operario: operario,
+                        barco: barco,
+                        oferta: nOfertaFinal,
+                        fechaInicio: fInicioStr,
+                        fechaInicioParsed: fInicioDate,
+                        dias: diasLab,
+                        estado: traducirEstado(e["ESTPRE"]),
+                        cliente: nombreCliente,
+                        grupoCliente: nombreGrupo,
+                        importe: importeNum
+                    });
+                });
+
+                mostrarMensajeInicial();
+
+            } catch (error) {
+                const errHtml = `<tr><td colspan="10" class="loading" style="color:red;">❌ Error de conexión: ${error.message}.<br><small>Revisa que las cabeceras CORS de tu ERP permitan peticiones externas, o desactiva la red mixta.</small></td></tr>`;
+                document.getElementById('summaryBody').innerHTML = errHtml;
+                document.getElementById('detailBody').innerHTML = errHtml;
+                console.error(error);
             }
-            return registros;
         }
 
-        // --- LÓGICA DE RENDERIZADO DIFERIDO ---
+        // --- LÓGICA DE INTERFAZ ---
         function mostrarMensajeInicial() {
             resetDashboard();
-            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Escribe un cliente o selecciona una fecha para ver los resultados.</td></tr>';
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos cargados del ERP. Escribe un cliente o selecciona una fecha para ver resultados.</td></tr>';
             document.getElementById('summaryBody').innerHTML = msj;
             document.getElementById('detailBody').innerHTML = msj;
         }
@@ -375,7 +339,6 @@
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
-            // Si los 3 campos están vacíos, vaciamos la tabla y pedimos que filtren
             if (!searchVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
@@ -447,14 +410,7 @@
             data.forEach(row => {
                 const usr = row.operario || 'Sin Asignar';
                 if (!stats[usr]) {
-                    stats[usr] = {
-                        totalCount: 0,
-                        sumDias: 0,
-                        fueraPlazo: 0,
-                        aceptados: 0,
-                        importeTotal: 0,
-                        importeAceptados: 0
-                    };
+                    stats[usr] = { totalCount: 0, sumDias: 0, fueraPlazo: 0, aceptados: 0, importeTotal: 0, importeAceptados: 0 };
                 }
                 
                 const s = stats[usr];
@@ -503,7 +459,6 @@
                 return;
             }
 
-            // Mostrar un máximo de 500 filas en el detalle para no saturar el navegador si el filtro es muy genérico
             const limit = Math.min(data.length, 500);
             
             for (let i = 0; i < limit; i++) {
@@ -531,7 +486,7 @@
 
             if (data.length > 500) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="9" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para ser más específico.</td>`;
+                tr.innerHTML = `<td colspan="9" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para afinar.</td>`;
                 body.appendChild(tr);
             }
         }

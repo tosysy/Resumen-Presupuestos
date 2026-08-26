@@ -123,10 +123,10 @@
                 <div class="stat-title" style="color: var(--purple);">Importe Pedidos</div>
                 <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
-            <!-- NUEVA TARJETA: HORAS INVERTIDAS -->
+            <!-- TARJETA: HORAS INVERTIDAS -->
             <div class="stat-card info">
                 <div class="stat-title">Tiempo Invertido</div>
-                <div class="stat-value" id="kpiHoras">0,00 h</div>
+                <div class="stat-value" id="kpiHoras">0 min</div>
             </div>
             <div class="stat-card success">
                 <div class="stat-title">Media Días (Presentar)</div>
@@ -305,6 +305,17 @@
             return null; 
         }
 
+        // Formatea los minutos totales en Horas y Minutos
+        function formatTiempo(totalMinutos) {
+            if (!totalMinutos || totalMinutos <= 0) return "0 min";
+            let h = Math.floor(totalMinutos / 60);
+            let m = Math.round(totalMinutos % 60);
+            
+            if (h > 0 && m > 0) return `${h} h ${m} min`;
+            if (h > 0) return `${h} h`;
+            return `${m} min`;
+        }
+
         async function loadData() {
             try {
                 // Descargamos de Sheets: Presupuestos (hasta la columna K) y la pestaña de Historial de Pedidos
@@ -365,7 +376,7 @@
                 clienteIdx: getColIndex(headers, ['cliente']),
                 grupoIdx: getColIndex(headers, ['grupo cliente']),
                 importeIdx: getColIndex(headers, ['importe']),
-                horasIdx: getColIndex(headers, ['horas', 'horas invertidas']) // LEEMOS LA NUEVA COLUMNA K
+                minutosIdx: getColIndex(headers, ['minutos', 'horas', 'invertid', 'tiempo']) // Busca la columna de tiempo
             };
 
             const registros = [];
@@ -386,11 +397,10 @@
                     importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
                 }
 
-                // Coger el valor de horas
-                let horasNum = 0;
-                if (indices.horasIdx !== -1 && r[indices.horasIdx]) {
-                    let rawH = String(r[indices.horasIdx]).replace(',', '.');
-                    horasNum = parseFloat(rawH) || 0;
+                // Coger el valor de minutos puros del script
+                let minutosNum = 0;
+                if (indices.minutosIdx !== -1 && r[indices.minutosIdx]) {
+                    minutosNum = parseFloat(r[indices.minutosIdx]) || 0;
                 }
 
                 registros.push({
@@ -403,7 +413,7 @@
                     cliente: indices.clienteIdx !== -1 ? (r[indices.clienteIdx] || '') : '',
                     grupoCliente: indices.grupoIdx !== -1 ? (r[indices.grupoIdx] || '') : '',
                     importe: importeNum,
-                    horas: horasNum
+                    minutos: minutosNum
                 });
             }
             return registros;
@@ -458,7 +468,7 @@
             document.getElementById('kpiImporteProcesado').textContent = '0,00 €';
             document.getElementById('kpiTotalPedidos').textContent = '0';
             document.getElementById('kpiImportePedidos').textContent = '0,00 €';
-            document.getElementById('kpiHoras').textContent = '0,00 h'; // Reset HORAS
+            document.getElementById('kpiHoras').textContent = '0 min'; // Reset HORAS/MINUTOS
             
             document.getElementById('txtCantPct').textContent = '0%';
             document.getElementById('txtImpPct').textContent = '0%';
@@ -540,7 +550,7 @@
             let fueraPlazo = 0;
             let importeProcesado = 0;
             let sumaDias = 0;
-            let sumaHoras = 0; // Sumador de horas
+            let sumaMinutos = 0; // Sumador de minutos
 
             dataPre.forEach(row => {
                 const est = row.estado.toLowerCase();
@@ -549,7 +559,7 @@
                 }
                 if (row.dias > DIAS_LIMITE) fueraPlazo++;
                 sumaDias += (row.dias || 0);
-                sumaHoras += (row.horas || 0); // Acumulamos el tiempo invertido
+                sumaMinutos += (row.minutos || 0); // Acumulamos minutos
             });
 
             let mediaDias = totalPreCount > 0 ? (sumaDias / totalPreCount).toFixed(1) : "0";
@@ -561,8 +571,8 @@
             document.getElementById('kpiTotalPedidos').textContent = totalPed;
             document.getElementById('kpiImportePedidos').textContent = fmtMoneda.format(importeTotalPed);
             
-            // Actualizar la tarjeta de HORAS INVERTIDAS
-            document.getElementById('kpiHoras').textContent = sumaHoras.toFixed(2).replace('.', ',') + " h";
+            // Transformar la suma de minutos a X h Y min
+            document.getElementById('kpiHoras').textContent = formatTiempo(sumaMinutos);
 
             // Cálculos de conversión: (Pedidos / Presupuestos)
             let pctCant = totalPreCount > 0 ? (totalPed / totalPreCount) : 0;
@@ -575,7 +585,6 @@
         }
 
         function updateCharts(pedidosCant, presupuestosCant, pedidosImp, presupuestosImp) {
-            // Si hay más pedidos que presupuestos, el sobrante para el anillo es 0
             const remCant = Math.max(0, presupuestosCant - pedidosCant);
             const remImp = Math.max(0, presupuestosImp - pedidosImp);
 

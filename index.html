@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Presupuestos</title>
+    <title>Dashboard Integral (Presupuestos y Pedidos)</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -15,6 +15,7 @@
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
+            --purple: #8b5cf6;
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
@@ -45,6 +46,8 @@
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
         .stat-card.info { border-left-color: var(--secondary); }
+        .stat-card.pedidos { border-left-color: var(--purple); }
+        
         .stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
         .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
 
@@ -62,8 +65,6 @@
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
         .loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
         .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--secondary); font-weight: bold; }
-
-        /* --- BOTONES ORDENACIÓN --- */
         .sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
         .sort-btn:hover { color: #fff; }
     </style>
@@ -99,26 +100,35 @@
         <!-- DASHBOARD (KPIs) -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">Presupuestos Filtrados</div>
+                <div class="stat-title">Presup. Filtrados</div>
                 <div class="stat-value" id="kpiTotal">0</div>
             </div>
-            <div class="stat-card danger">
-                <div class="stat-title">Fuera de Plazo (>5 Días)</div>
-                <div class="stat-value" id="kpiFueraPlazo">0</div>
+            <div class="stat-card info">
+                <div class="stat-title">Importe Presup. (A, R, E)</div>
+                <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
             </div>
             <div class="stat-card success">
-                <div class="stat-title">Aceptados (Cant.)</div>
+                <div class="stat-title">Presup. Aceptados (Cant.)</div>
                 <div class="stat-value" id="kpiAceptados">0</div>
             </div>
-            <div class="stat-card info">
-                <div class="stat-title">Importe Total (A, R, E)</div>
-                <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
+            <div class="stat-card danger">
+                <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
+                <div class="stat-value" id="kpiFueraPlazo">0</div>
+            </div>
+            <!-- NUEVOS KPIS DE PEDIDOS -->
+            <div class="stat-card pedidos">
+                <div class="stat-title" style="color: var(--purple);">Pedidos Filtrados</div>
+                <div class="stat-value" id="kpiTotalPedidos">0</div>
+            </div>
+            <div class="stat-card pedidos">
+                <div class="stat-title" style="color: var(--purple);">Importe Pedidos</div>
+                <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
         </div>
 
         <!-- TABLA RESUMEN POR USUARIO -->
         <div class="card">
-            <h2>📊 Resumen por Usuario</h2>
+            <h2>📊 Resumen por Usuario (Presupuestos)</h2>
             <div style="overflow-x: auto;">
                 <table id="summaryTable">
                     <thead>
@@ -181,16 +191,16 @@
 
     <script>
         // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
-        const SPREADSHEET_ID = '12Q22Oqf5pD-2NAo9JOOCnTzaiI7Go9DjKuuYAk0MZMA'; 
+        const SPREADSHEET_ID_PRE = '12Q22Oqf5pD-2NAo9JOOCnTzaiI7Go9DjKuuYAk0MZMA'; 
+        const SPREADSHEET_ID_PED = '1s4UujUFauUSvfK25IwE3dwuCs9mVNzt45ScIrooVlbA';
         const API_KEY = 'AIzaSyDOjxTMxlPAGOEayC0JwD28mx21zd6xkk8'; 
-        const SHEET_NAME = 'RESUMEN';
         
         const DIAS_LIMITE = 5;
 
         let allRegistros = [];
-        let currentFiltered = [];
-        let uniqueClients = [];
-        let uniqueGroups = [];
+        let allPedidos = [];
+        let currentFilteredPre = [];
+        let currentFilteredPed = [];
 
         const fmtMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
         const fmtPorcentaje = (num) => (isNaN(num) ? '0.00%' : (num * 100).toFixed(2) + '%');
@@ -199,11 +209,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             
-            // Listeners normales
             document.getElementById('startDateInput').addEventListener('change', applyFilters);
             document.getElementById('endDateInput').addEventListener('change', applyFilters);
 
-            // Cerrar desplegables al hacer clic fuera
             document.addEventListener('click', (e) => {
                 const clientList = document.getElementById('clientList');
                 const groupList = document.getElementById('groupList');
@@ -212,7 +220,6 @@
             });
         });
 
-        // Configuración de los Dropdowns Personalizados (DINÁMICOS)
         function setupCustomDropdown(inputId, listId, getItemsFn) {
             const input = document.getElementById(inputId);
             const list = document.getElementById(listId);
@@ -221,12 +228,8 @@
                 list.innerHTML = "";
                 const cleanFilter = removeAccents(filterText.toLowerCase().trim());
                 
-                // Llamamos a la función para obtener los elementos actualizados en tiempo real
                 const items = getItemsFn();
-                
-                const filtered = items.filter(item => 
-                    removeAccents(item.toLowerCase()).includes(cleanFilter)
-                );
+                const filtered = items.filter(item => removeAccents(item.toLowerCase()).includes(cleanFilter));
 
                 if (filtered.length === 0) {
                     list.innerHTML = '<div class="option-item" style="color:#999; cursor:default;">No hay resultados</div>';
@@ -267,28 +270,35 @@
 
         async function loadData() {
             try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:J?key=${API_KEY}`;
-                const response = await fetch(url);
+                // Descargar ambos excels a la vez
+                const urlPre = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PRE}/values/RESUMEN!A:J?key=${API_KEY}`;
+                const urlPed = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PED}/values/Pedidos!A:I?key=${API_KEY}`;
                 
-                if (!response.ok) throw new Error(`Error de conexión con Sheets.`);
+                const [resPre, resPed] = await Promise.all([fetch(urlPre), fetch(urlPed)]);
                 
-                const data = await response.json();
-                allRegistros = parseGoogleSheets(data);
+                if (!resPre.ok || !resPed.ok) throw new Error(`Error de conexión con Sheets.`);
+                
+                const dataPre = await resPre.json();
+                const dataPed = await resPed.json();
+                
+                allRegistros = parseGoogleSheetsPresupuestos(dataPre);
+                allPedidos = parseGoogleSheetsPedidos(dataPed);
 
-                // GRUPOS: Mostrar siempre todos los grupos únicos disponibles
+                // Grupos de clientes combinados de ambos archivos
                 setupCustomDropdown('groupInput', 'groupList', () => {
-                    return [...new Set(allRegistros.map(r => r.grupoCliente).filter(g => g))].sort();
+                    const combinedGroups = [...allRegistros.map(r => r.grupoCliente), ...allPedidos.map(p => p.grupoCliente)].filter(g => g);
+                    return [...new Set(combinedGroups)].sort();
                 });
 
-                // CLIENTES (EN CASCADA): Filtrar clientes basándose en el Grupo seleccionado
+                // Clientes en cascada combinados de ambos archivos
                 setupCustomDropdown('clientInput', 'clientList', () => {
                     const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
                     
-                    const registrosValidos = allRegistros.filter(row => {
-                        return !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
-                    });
+                    const validPre = allRegistros.filter(row => !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal)).map(r => r.cliente);
+                    const validPed = allPedidos.filter(row => !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal)).map(p => p.cliente);
                     
-                    return [...new Set(registrosValidos.map(r => r.cliente).filter(c => c))].sort();
+                    const validClients = [...validPre, ...validPed].filter(c => c);
+                    return [...new Set(validClients)].sort();
                 });
                 
                 mostrarMensajeInicial(); 
@@ -298,36 +308,34 @@
             }
         }
 
-        function parseGoogleSheets(data) {
+        function getColIndex(headers, names) {
+            for (let n of names) {
+                const cleanName = removeAccents(n.toLowerCase());
+                const idx = headers.findIndex(h => h === cleanName || h.includes(cleanName));
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        }
+
+        function parseGoogleSheetsPresupuestos(data) {
             const rows = data.values;
             if (!rows || rows.length < 2) return [];
 
             const headers = rows[0].map(c => removeAccents((c || '').trim().toLowerCase()));
-
-            const getCol = (names) => {
-                for (let n of names) {
-                    const cleanName = removeAccents(n.toLowerCase());
-                    const idx = headers.findIndex(h => h === cleanName || h.includes(cleanName));
-                    if (idx !== -1) return idx;
-                }
-                return -1;
-            };
-
             const indices = {
-                operarioIdx: getCol(['operario', 'usuario']),
-                barcoIdx: getCol(['barco']),
-                ofertaIdx: getCol(['nº oferta', 'oferta']),
-                fInicioIdx: getCol(['fecha inicio']),
-                diasIdx: getCol(['dias desde inicio', 'dias']),
-                fEnvioIdx: getCol(['fecha de envio', 'fecha envio']),
-                estadoIdx: getCol(['estado']),
-                clienteIdx: getCol(['cliente']),
-                grupoIdx: getCol(['grupo cliente']),
-                importeIdx: getCol(['importe'])
+                operarioIdx: getColIndex(headers, ['operario', 'usuario']),
+                barcoIdx: getColIndex(headers, ['barco']),
+                ofertaIdx: getColIndex(headers, ['nº oferta', 'oferta']),
+                fInicioIdx: getColIndex(headers, ['fecha inicio']),
+                diasIdx: getColIndex(headers, ['dias desde inicio', 'dias']),
+                fEnvioIdx: getColIndex(headers, ['fecha de envio', 'fecha envio']),
+                estadoIdx: getColIndex(headers, ['estado']),
+                clienteIdx: getColIndex(headers, ['cliente']),
+                grupoIdx: getColIndex(headers, ['grupo cliente']),
+                importeIdx: getColIndex(headers, ['importe'])
             };
 
             const registros = [];
-
             for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
                 if (!r || r.length === 0) continue;
@@ -346,11 +354,9 @@
                 }
 
                 registros.push({
-                    operario: operario,
-                    barco: barco,
+                    operario: operario, barco: barco,
                     oferta: indices.ofertaIdx !== -1 ? (r[indices.ofertaIdx] || '') : '',
-                    fechaInicio: fechaInicio,
-                    fechaInicioParsed: parseSheetDate(fechaInicio),
+                    fechaInicio: fechaInicio, fechaInicioParsed: parseSheetDate(fechaInicio),
                     fechaEnvio: indices.fEnvioIdx !== -1 ? (r[indices.fEnvioIdx] || '') : '',
                     dias: diasNumericos,
                     estado: indices.estadoIdx !== -1 ? (r[indices.estadoIdx] || '') : '',
@@ -362,9 +368,43 @@
             return registros;
         }
 
+        function parseGoogleSheetsPedidos(data) {
+            const rows = data.values;
+            if (!rows || rows.length < 2) return [];
+
+            const headers = rows[0].map(c => removeAccents((c || '').trim().toLowerCase()));
+            const indices = {
+                clienteIdx: getColIndex(headers, ['cliente']),
+                grupoIdx: getColIndex(headers, ['grupo de clientes', 'grupo cliente']),
+                fechaIdx: getColIndex(headers, ['fecha sistema']),
+                importeIdx: getColIndex(headers, ['importe'])
+            };
+
+            const registros = [];
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.length === 0) continue;
+
+                const fechaSistema = indices.fechaIdx !== -1 ? (r[indices.fechaIdx] || '') : '';
+                let importeNum = 0;
+                if (indices.importeIdx !== -1 && r[indices.importeIdx]) {
+                    let raw = String(r[indices.importeIdx]).replace(/[^\d,\.-]/g, '');
+                    importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
+                }
+
+                registros.push({
+                    cliente: indices.clienteIdx !== -1 ? (r[indices.clienteIdx] || '') : '',
+                    grupoCliente: indices.grupoIdx !== -1 ? (r[indices.grupoIdx] || '') : '',
+                    fechaParsed: parseSheetDate(fechaSistema),
+                    importe: importeNum
+                });
+            }
+            return registros;
+        }
+
         function mostrarMensajeInicial() {
             resetDashboard();
-            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Utiliza los selectores de arriba para buscar presupuestos.</td></tr>';
+            const msj = '<tr><td colspan="10" class="empty-state">👆 Datos listos. Utiliza los selectores de arriba para buscar presupuestos y pedidos.</td></tr>';
             document.getElementById('summaryBody').innerHTML = msj;
             document.getElementById('detailBody').innerHTML = msj;
         }
@@ -374,6 +414,9 @@
             document.getElementById('kpiFueraPlazo').textContent = '0';
             document.getElementById('kpiAceptados').textContent = '0';
             document.getElementById('kpiImporteProcesado').textContent = '0,00 €';
+            
+            document.getElementById('kpiTotalPedidos').textContent = '0';
+            document.getElementById('kpiImportePedidos').textContent = '0,00 €';
         }
 
         function applyFilters() {
@@ -383,7 +426,6 @@
             const startVal = document.getElementById('startDateInput').value;
             const endVal = document.getElementById('endDateInput').value;
 
-            // Si todo está vacío, mostramos el mensaje por defecto
             if (!clientVal && !groupVal && !startVal && !endVal) {
                 mostrarMensajeInicial();
                 return;
@@ -393,7 +435,8 @@
             let endDate = endVal ? new Date(endVal) : null;
             if (endDate) endDate.setHours(23, 59, 59, 999);
 
-            currentFiltered = allRegistros.filter(row => {
+            // Filtrar PRESUPUESTOS
+            currentFilteredPre = allRegistros.filter(row => {
                 const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
                 const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
 
@@ -402,72 +445,81 @@
                     if (row.fechaInicioParsed) {
                         if (startDate && row.fechaInicioParsed < startDate) matchesDate = false;
                         if (endDate && row.fechaInicioParsed > endDate) matchesDate = false;
-                    } else {
-                        matchesDate = false;
-                    }
+                    } else { matchesDate = false; }
                 }
                 return matchClient && matchGroup && matchesDate;
             });
-
-            // Orden por defecto: los más recientes primero
-            currentFiltered.sort((a, b) => {
+            currentFilteredPre.sort((a, b) => {
                 if (!a.fechaInicioParsed) return 1;
                 if (!b.fechaInicioParsed) return -1;
                 return b.fechaInicioParsed - a.fechaInicioParsed;
             });
 
-            updateDashboard(currentFiltered);
-            renderSummary(currentFiltered);
-            renderDetail(currentFiltered);
+            // Filtrar PEDIDOS
+            currentFilteredPed = allPedidos.filter(row => {
+                const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
+                const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
+
+                let matchesDate = true;
+                if (startDate || endDate) {
+                    if (row.fechaParsed) {
+                        if (startDate && row.fechaParsed < startDate) matchesDate = false;
+                        if (endDate && row.fechaParsed > endDate) matchesDate = false;
+                    } else { matchesDate = false; }
+                }
+                return matchClient && matchGroup && matchesDate;
+            });
+
+            updateDashboard(currentFilteredPre, currentFilteredPed);
+            renderSummary(currentFilteredPre);
+            renderDetail(currentFilteredPre);
         }
 
         function sortData(column, order) {
-            if(currentFiltered.length === 0) return;
+            if(currentFilteredPre.length === 0) return;
 
-            currentFiltered.sort((a, b) => {
+            currentFilteredPre.sort((a, b) => {
                 let valA = a[column];
                 let valB = b[column];
-
                 if (valA === null || valA === '') return 1;
                 if (valB === null || valB === '') return -1;
-
                 if (valA < valB) return order === 'asc' ? -1 : 1;
                 if (valA > valB) return order === 'asc' ? 1 : -1;
                 return 0;
             });
-            renderDetail(currentFiltered);
+            renderDetail(currentFilteredPre);
         }
 
-        function updateDashboard(data) {
-            let total = data.length;
+        function updateDashboard(dataPre, dataPed) {
+            let totalPre = dataPre.length;
             let fueraPlazo = 0;
             let aceptados = 0;
             let importeProcesado = 0;
 
-            data.forEach(row => {
+            dataPre.forEach(row => {
                 const est = row.estado.toLowerCase();
-                
-                if (est.includes('aceptado')) {
-                    aceptados++;
-                }
-                
-                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) {
-                    importeProcesado += row.importe;
-                }
-
+                if (est.includes('aceptado')) aceptados++;
+                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) importeProcesado += row.importe;
                 if (row.dias > DIAS_LIMITE) fueraPlazo++;
             });
 
-            document.getElementById('kpiTotal').textContent = total;
+            document.getElementById('kpiTotal').textContent = totalPre;
             document.getElementById('kpiFueraPlazo').textContent = fueraPlazo;
             document.getElementById('kpiAceptados').textContent = aceptados;
             document.getElementById('kpiImporteProcesado').textContent = fmtMoneda.format(importeProcesado);
+
+            // Totalizadores de PEDIDOS
+            let totalPed = dataPed.length;
+            let importeTotalPed = 0;
+            dataPed.forEach(row => importeTotalPed += row.importe);
+            
+            document.getElementById('kpiTotalPedidos').textContent = totalPed;
+            document.getElementById('kpiImportePedidos').textContent = fmtMoneda.format(importeTotalPed);
         }
 
         function renderSummary(data) {
             const body = document.getElementById('summaryBody');
             body.innerHTML = '';
-
             if (data.length === 0) {
                 body.innerHTML = '<tr><td colspan="8" class="text-center">No hay datos para estos filtros</td></tr>';
                 return;
@@ -476,24 +528,15 @@
             const stats = {};
             data.forEach(row => {
                 const usr = row.operario || 'Sin Asignar';
-                if (!stats[usr]) {
-                    stats[usr] = { totalCount: 0, sumDias: 0, fueraPlazo: 0, aceptados: 0, importeTotal: 0, importeAceptados: 0 };
-                }
+                if (!stats[usr]) stats[usr] = { totalCount: 0, sumDias: 0, fueraPlazo: 0, aceptados: 0, importeTotal: 0, importeAceptados: 0 };
                 
                 const s = stats[usr];
                 s.totalCount++;
                 s.sumDias += row.dias;
                 
                 const est = row.estado.toLowerCase();
-                if (est.includes('aceptado')) {
-                    s.aceptados++;
-                    s.importeAceptados += row.importe;
-                }
-                
-                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) {
-                    s.importeTotal += row.importe;
-                }
-
+                if (est.includes('aceptado')) { s.aceptados++; s.importeAceptados += row.importe; }
+                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) s.importeTotal += row.importe;
                 if (row.dias > DIAS_LIMITE) s.fueraPlazo++;
             });
 
@@ -502,7 +545,6 @@
             sortedUsers.forEach(usr => {
                 const s = stats[usr];
                 const mediaDias = s.totalCount > 0 ? (s.sumDias / s.totalCount).toFixed(2) : "0.00";
-                
                 const pctFueraPlazo = s.totalCount > 0 ? (s.fueraPlazo / s.totalCount) : 0;
                 const pctAceptados = s.totalCount > 0 ? (s.aceptados / s.totalCount) : 0;
                 const pctImporte = s.importeTotal > 0 ? (s.importeAceptados / s.importeTotal) : 0;
@@ -525,14 +567,12 @@
         function renderDetail(data) {
             const body = document.getElementById('detailBody');
             body.innerHTML = '';
-
             if (data.length === 0) {
                 body.innerHTML = '<tr><td colspan="10" class="text-center">No se encontraron resultados</td></tr>';
                 return;
             }
 
             const limit = Math.min(data.length, 500);
-            
             for (let i = 0; i < limit; i++) {
                 const row = data[i];
                 const tr = document.createElement('tr');

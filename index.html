@@ -44,6 +44,7 @@
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); display: flex; flex-direction: column; }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
+        .stat-card.info { border-left-color: var(--secondary); }
         .stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
         .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
 
@@ -109,9 +110,9 @@
                 <div class="stat-title">Aceptados (Cant.)</div>
                 <div class="stat-value" id="kpiAceptados">0</div>
             </div>
-            <div class="stat-card success">
-                <div class="stat-title">Aceptados (Importe)</div>
-                <div class="stat-value" id="kpiImporteAceptados">0,00 €</div>
+            <div class="stat-card info">
+                <div class="stat-title">Importe Total (A, R, E)</div>
+                <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
             </div>
         </div>
 
@@ -372,7 +373,7 @@
             document.getElementById('kpiTotal').textContent = '0';
             document.getElementById('kpiFueraPlazo').textContent = '0';
             document.getElementById('kpiAceptados').textContent = '0';
-            document.getElementById('kpiImporteAceptados').textContent = '0,00 €';
+            document.getElementById('kpiImporteProcesado').textContent = '0,00 €';
         }
 
         function applyFilters() {
@@ -441,21 +442,26 @@
             let total = data.length;
             let fueraPlazo = 0;
             let aceptados = 0;
-            let importeAceptados = 0;
+            let importeProcesado = 0;
 
             data.forEach(row => {
                 const est = row.estado.toLowerCase();
+                
                 if (est.includes('aceptado')) {
                     aceptados++;
-                    importeAceptados += row.importe;
                 }
+                
+                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) {
+                    importeProcesado += row.importe;
+                }
+
                 if (row.dias > DIAS_LIMITE) fueraPlazo++;
             });
 
             document.getElementById('kpiTotal').textContent = total;
             document.getElementById('kpiFueraPlazo').textContent = fueraPlazo;
             document.getElementById('kpiAceptados').textContent = aceptados;
-            document.getElementById('kpiImporteAceptados').textContent = fmtMoneda.format(importeAceptados);
+            document.getElementById('kpiImporteProcesado').textContent = fmtMoneda.format(importeProcesado);
         }
 
         function renderSummary(data) {
@@ -477,13 +483,17 @@
                 const s = stats[usr];
                 s.totalCount++;
                 s.sumDias += row.dias;
-                s.importeTotal += row.importe;
-
+                
                 const est = row.estado.toLowerCase();
                 if (est.includes('aceptado')) {
                     s.aceptados++;
                     s.importeAceptados += row.importe;
                 }
+                
+                if (est.includes('aceptado') || est.includes('rechazado') || est.includes('enviado')) {
+                    s.importeTotal += row.importe;
+                }
+
                 if (row.dias > DIAS_LIMITE) s.fueraPlazo++;
             });
 
@@ -491,7 +501,11 @@
 
             sortedUsers.forEach(usr => {
                 const s = stats[usr];
-                const mediaDias = (s.sumDias / s.totalCount).toFixed(2);
+                const mediaDias = s.totalCount > 0 ? (s.sumDias / s.totalCount).toFixed(2) : "0.00";
+                
+                const pctFueraPlazo = s.totalCount > 0 ? (s.fueraPlazo / s.totalCount) : 0;
+                const pctAceptados = s.totalCount > 0 ? (s.aceptados / s.totalCount) : 0;
+                const pctImporte = s.importeTotal > 0 ? (s.importeAceptados / s.importeTotal) : 0;
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -499,10 +513,10 @@
                     <td class="text-center">${mediaDias}</td>
                     <td class="text-center bold">${s.totalCount}</td>
                     <td class="text-center" style="color: var(--danger); font-weight: bold;">${s.fueraPlazo}</td>
-                    <td class="text-center">${fmtPorcentaje(s.fueraPlazo / s.totalCount)}</td>
+                    <td class="text-center">${fmtPorcentaje(pctFueraPlazo)}</td>
                     <td class="text-center" style="color: var(--success); font-weight: bold;">${s.aceptados}</td>
-                    <td class="text-center">${fmtPorcentaje(s.aceptados / s.totalCount)}</td>
-                    <td class="text-right bold">${fmtPorcentaje(s.importeAceptados / s.importeTotal)}</td>
+                    <td class="text-center">${fmtPorcentaje(pctAceptados)}</td>
+                    <td class="text-right bold">${fmtPorcentaje(pctImporte)}</td>
                 `;
                 body.appendChild(tr);
             });

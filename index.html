@@ -480,6 +480,7 @@
             document.getElementById('txtImpPct').textContent = '0%';
         }
 
+        // --- FUNCIÓN ACTUALIZADA ---
         function applyFilters() {
             const clientVal = removeAccents(document.getElementById('clientInput').value.toLowerCase().trim());
             const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
@@ -491,22 +492,35 @@
                 return;
             }
 
-            const startDate = startVal ? new Date(startVal) : null;
-            let endDate = endVal ? new Date(endVal) : null;
-            if (endDate) endDate.setHours(23, 59, 59, 999);
+            // CORRECCIÓN: Parsear las fechas manualmente para evitar el salto de zona horaria UTC a Local
+            let startDate = null;
+            if (startVal) {
+                const [y, m, d] = startVal.split('-');
+                startDate = new Date(y, m - 1, d, 0, 0, 0, 0); // Inicio del día
+            }
+
+            let endDate = null;
+            if (endVal) {
+                const [y, m, d] = endVal.split('-');
+                endDate = new Date(y, m - 1, d, 23, 59, 59, 999); // Final exacto del día
+            }
 
             currentFilteredPre = allRegistros.filter(row => {
                 const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
                 const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
                 let matchesDate = true;
+                
                 if (startDate || endDate) {
                     if (row.fechaInicioParsed) {
                         if (startDate && row.fechaInicioParsed < startDate) matchesDate = false;
                         if (endDate && row.fechaInicioParsed > endDate) matchesDate = false;
-                    } else { matchesDate = false; }
+                    } else { 
+                        matchesDate = false; 
+                    }
                 }
                 return matchClient && matchGroup && matchesDate;
             });
+
             currentFilteredPre.sort((a, b) => {
                 if (!a.fechaInicioParsed) return 1;
                 if (!b.fechaInicioParsed) return -1;
@@ -520,11 +534,14 @@
                 const matchClient = !clientVal || removeAccents(row.cliente.toLowerCase()).includes(clientVal);
                 const matchGroup = !groupVal || removeAccents(row.grupoCliente.toLowerCase()).includes(groupVal);
                 let matchesDate = true;
+                
                 if (startDate || endDate) {
                     if (row.fechaParsed) {
                         if (startDate && row.fechaParsed < startDate) matchesDate = false;
                         if (endDate && row.fechaParsed > endDate) matchesDate = false;
-                    } else { matchesDate = false; }
+                    } else { 
+                        matchesDate = false; 
+                    }
                 }
                 if (matchClient && matchGroup && matchesDate) {
                     totalPed++;

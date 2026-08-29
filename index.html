@@ -123,7 +123,7 @@
                 <div class="stat-title" style="color: var(--purple);">Importe Pedidos</div>
                 <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
-            <!-- TARJETA: HORAS INVERTIDAS -->
+            <!-- TARJETA: TIEMPO INVERTIDO (Días, Horas y Minutos) -->
             <div class="stat-card info">
                 <div class="stat-title">Tiempo Invertido</div>
                 <div class="stat-value" id="kpiHoras">0 min</div>
@@ -219,7 +219,6 @@
                         </tr>
                     </thead>
                     <tbody id="detailBody">
-                        <!-- Actualizado a 11 columnas -->
                         <tr><td colspan="11" class="loading">Descargando bases de datos de Google Sheets...</td></tr>
                     </tbody>
                 </table>
@@ -311,20 +310,24 @@
             return null; 
         }
 
-        // Formatea los minutos totales en Horas y Minutos
+        // Formatea los minutos totales en Días, Horas y Minutos
         function formatTiempo(totalMinutos) {
             if (!totalMinutos || totalMinutos <= 0) return "0 min";
-            let h = Math.floor(totalMinutos / 60);
-            let m = Math.round(totalMinutos % 60);
             
-            if (h > 0 && m > 0) return `${h} h ${m} min`;
-            if (h > 0) return `${h} h`;
-            return `${m} min`;
+            let dias = Math.floor(totalMinutos / 1440);
+            let horas = Math.floor((totalMinutos % 1440) / 60);
+            let minutos = Math.round(totalMinutos % 60);
+            
+            let partes = [];
+            if (dias > 0) partes.push(`${dias} d`);
+            if (horas > 0) partes.push(`${horas} h`);
+            if (minutos > 0 || partes.length === 0) partes.push(`${minutos} min`);
+            
+            return partes.join(' ');
         }
 
         async function loadData() {
             try {
-                // Descargamos de Sheets: Presupuestos (hasta la columna K) y la pestaña de Historial de Pedidos
                 const urlPre = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PRE}/values/RESUMEN!A:K?key=${API_KEY}`;
                 const urlPed = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID_PED}/values/Historial%20Pedidos!A:I?key=${API_KEY}`;
                 
@@ -403,7 +406,6 @@
                     importeNum = parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
                 }
 
-                // Coger el valor de minutos puros del script
                 let minutosNum = 0;
                 if (indices.minutosIdx !== -1 && r[indices.minutosIdx]) {
                     minutosNum = parseFloat(r[indices.minutosIdx]) || 0;
@@ -419,7 +421,7 @@
                     cliente: indices.clienteIdx !== -1 ? (r[indices.clienteIdx] || '') : '',
                     grupoCliente: indices.grupoIdx !== -1 ? (r[indices.grupoIdx] || '') : '',
                     importe: importeNum,
-                    minutos: minutosNum // Guardamos los minutos
+                    minutos: minutosNum
                 });
             }
             return registros;
@@ -480,7 +482,6 @@
             document.getElementById('txtImpPct').textContent = '0%';
         }
 
-        // --- FUNCIÓN ACTUALIZADA ---
         function applyFilters() {
             const clientVal = removeAccents(document.getElementById('clientInput').value.toLowerCase().trim());
             const groupVal = removeAccents(document.getElementById('groupInput').value.toLowerCase().trim());
@@ -492,17 +493,16 @@
                 return;
             }
 
-            // CORRECCIÓN: Parsear las fechas manualmente para evitar el salto de zona horaria UTC a Local
             let startDate = null;
             if (startVal) {
                 const [y, m, d] = startVal.split('-');
-                startDate = new Date(y, m - 1, d, 0, 0, 0, 0); // Inicio del día
+                startDate = new Date(y, m - 1, d, 0, 0, 0, 0);
             }
 
             let endDate = null;
             if (endVal) {
                 const [y, m, d] = endVal.split('-');
-                endDate = new Date(y, m - 1, d, 23, 59, 59, 999); // Final exacto del día
+                endDate = new Date(y, m - 1, d, 23, 59, 59, 999);
             }
 
             currentFilteredPre = allRegistros.filter(row => {
@@ -710,7 +710,6 @@
             const body = document.getElementById('detailBody');
             body.innerHTML = '';
             if (data.length === 0) {
-                // Actualizado a 11 columnas
                 body.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron resultados</td></tr>';
                 return;
             }
@@ -731,7 +730,7 @@
                     <td>${row.oferta}</td>
                     <td>${row.fechaInicio}</td>
                     <td class="text-center">${row.dias}</td>
-                    <td class="text-center">${formatTiempo(row.minutos)}</td> <!-- NUEVA COLUMNA DE TIEMPO -->
+                    <td class="text-center">${formatTiempo(row.minutos)}</td>
                     <td>${row.fechaEnvio}</td>
                     <td><span class="status-badge" style="background:${bgColor}; color:${color}">${row.estado}</span></td>
                     <td>${row.cliente}</td>
@@ -743,7 +742,6 @@
 
             if (data.length > 500) {
                 const tr = document.createElement('tr');
-                // Actualizado a 11 columnas
                 tr.innerHTML = `<td colspan="11" class="text-center" style="color: var(--warning); font-weight: bold;">Mostrando 500 de ${data.length} resultados. Usa los filtros para afinar.</td>`;
                 body.appendChild(tr);
             }

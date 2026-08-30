@@ -46,9 +46,10 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente para que resalte el logo azul */
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 5px 15px;
             border-radius: 6px;
+            min-height: 45px; /* Evita saltos visuales si tarda en cargar */
         }
 
         .logo-img {
@@ -120,8 +121,15 @@
         <!-- CABECERA CORPORATIVA ÁNCORA -->
         <header class="header-corp">
             <div class="logo-container">
-                <!-- Logo de Áncora Efectos Navales -->
-                <img src="https://ancoravigo.com/wp-content/uploads/2016/02/LOGO-ANCORA-.png" alt="Logo Áncora Efectos Navales" class="logo-img">
+                <!-- Logo local: debe estar en la misma carpeta que el archivo HTML -->
+                <img src="logo.png" alt="Logo Áncora Efectos Navales" class="logo-img" id="realLogo" onerror="this.style.display='none'; document.getElementById('svgLogo').style.display='block';">
+                
+                <!-- Icono de Ancla de repuesto (Fallback) -->
+                <svg id="svgLogo" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); display: none;">
+                    <circle cx="12" cy="5" r="3"></circle>
+                    <line x1="12" y1="22" x2="12" y2="8"></line>
+                    <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+                </svg>
             </div>
             <div>
                 <p>Dashboard Integral (Presupuestos y Pedidos)</p>

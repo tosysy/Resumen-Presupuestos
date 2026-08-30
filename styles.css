@@ -194,75 +194,87 @@ tr:hover td { background-color: rgba(238, 242, 246, 0.7); }
 }
 @media (max-width: 600px) {
     body {
-        padding: 10px;
+        padding: 8px;
     }
     .header-corp {
-        padding: 12px 15px;
-        margin-bottom: 15px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
     .logo-container {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
     .logo-container img {
-        height: 30px;
+        height: 26px;
     }
     .logo-container h1 {
-        font-size: 18px;
+        font-size: 16px;
     }
     .filters-section {
-        padding: 12px;
-        margin-bottom: 15px;
-        gap: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        gap: 8px;
     }
     .input-group {
-        min-width: 130px;
+        min-width: 120px;
     }
     .stats-container {
-        gap: 8px;
-        margin-bottom: 15px;
+        gap: 6px;
+        margin-bottom: 10px;
     }
     .stats-row-top {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 6px;
     }
     .stats-row-bottom {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 6px;
     }
     .stats-row-bottom > div:last-child {
         grid-column: span 2;
     }
     .stat-card {
-        padding: 10px 12px;
+        padding: 6px 8px;
         border-left-width: 3px;
     }
     .stat-title {
-        font-size: 10px;
-        margin-bottom: 2px;
+        font-size: 8.5px;
+        margin-bottom: 1px;
+        letter-spacing: 0.1px;
     }
     .stat-value {
-        font-size: 16px;
+        font-size: 13px;
     }
     .charts-container {
-        gap: 10px;
-        margin-bottom: 15px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        margin-bottom: 10px;
+        justify-content: stretch;
     }
     .chart-box {
-        padding: 12px;
-        min-width: 100%;
+        padding: 8px;
+        min-width: 0;
+        max-width: none;
     }
     .chart-box h3 {
-        font-size: 12px;
-        margin-bottom: 8px;
+        font-size: 9.5px;
+        margin-bottom: 4px;
+    }
+    .chart-box p {
+        font-size: 9px !important;
+        margin-top: 4px !important;
+        margin-bottom: 0px !important;
+        line-height: 1.1;
     }
     .chart-canvas-container {
-        height: 140px;
+        height: 110px;
     }
     .chart-percentage {
-        font-size: 20px;
+        font-size: 15px;
+        top: 60%;
     }
 }

@@ -28,12 +28,12 @@
             font-family: 'Segoe UI', system-ui, sans-serif; 
             /* MARCA DE AGUA DE FONDO */
             background-color: var(--bg-color);
-            /* El degradado aplica un 90% de color sobre la imagen para que sea sutil */
-            background-image: linear-gradient(rgba(238, 242, 246, 0.90), rgba(238, 242, 246, 0.90)), url('logo.png'); 
+            /* Degradado al 70% para que el logo resalte más oscuro */
+            background-image: linear-gradient(rgba(238, 242, 246, 0.70), rgba(238, 242, 246, 0.70)), url('logo.png'); 
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed; /* Se mantiene en el centro al hacer scroll */
-            background-size: 50%; /* Tamaño del logo en el fondo. Puedes cambiarlo (ej. 40%, 60%) */
+            background-size: 50%; /* Tamaño del logo en el fondo */
             
             color: var(--text-color); 
             margin: 0; 
@@ -165,7 +165,6 @@
         <!-- CABECERA CORPORATIVA ÁNCORA -->
         <header class="header-corp">
             <div class="logo-container">
-                <!-- Se ha sustituido la imagen por el título, ya que el logo es ahora el fondo -->
                 <h1>Áncora Efectos Navales</h1>
             </div>
             <div>

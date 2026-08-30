@@ -1,10 +1,10 @@
 :root {
     /* PALETA CORPORATIVA ÁNCORA EFECTOS NAVALES */
-    --bg-color: #eef2f6; 
+    --bg-color: #0b2447; 
     --text-color: #334155;
     
-    /* Fondo semitransparente para dejar ver el logo (65% de opacidad blanca) */
-    --card-bg: rgba(255, 255, 255, 0.65); 
+    /* Fondo semitransparente para dejar ver el logo blanco sobre el azul */
+    --card-bg: rgba(255, 255, 255, 0.82); 
     
     --primary: #0B2447; 
     --secondary: #19376D; 
@@ -19,13 +19,13 @@
 
 body { 
     font-family: 'Segoe UI', system-ui, sans-serif; 
-    /* MARCA DE AGUA DE FONDO */
+    /* MARCA DE AGUA DE FONDO CON LOGO BLANCO SOBRE AZUL CORPORATIVO */
     background-color: var(--bg-color);
-    background-image: linear-gradient(rgba(238, 242, 246, 0.70), rgba(238, 242, 246, 0.70)), url('logo.png'); 
+    background-image: linear-gradient(rgba(11, 36, 71, 0.50), rgba(11, 36, 71, 0.50)), url('logo-white.png'); 
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed; 
-    background-size: 50%; 
+    background-size: 55%; 
     color: var(--text-color); 
     margin: 0; 
     padding: 20px; 
@@ -35,11 +35,12 @@ body {
 
 /* --- CABECERA CORPORATIVA --- */
 .header-corp {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%), var(--primary);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
     padding: 20px 30px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
@@ -52,6 +53,12 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.logo-container img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 .logo-container h1 {

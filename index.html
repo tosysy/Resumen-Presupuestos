@@ -49,7 +49,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             padding: 5px 15px;
             border-radius: 6px;
-            min-height: 45px; /* Evita saltos visuales si tarda en cargar */
+            min-height: 45px;
         }
 
         .logo-img {
@@ -80,8 +80,24 @@
         .option-item:hover { background-color: var(--bg-color); color: var(--primary); font-weight: 600; }
 
         /* --- DASHBOARD STATS --- */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); display: flex; flex-direction: column; }
+        .stats-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+        .stat-card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            border-left: 5px solid var(--primary); 
+            display: flex; 
+            flex-direction: column; 
+            flex: 0 1 calc(25% - 15px); 
+            min-width: 220px;
+        }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
         .stat-card.info { border-left-color: var(--accent); }
@@ -162,7 +178,9 @@
         </div>
 
         <!-- DASHBOARD (KPIs) -->
+        <!-- Se ha cambiado el orden en el HTML para que aparezcan correctamente alineadas -->
         <div class="stats-grid">
+            <!-- FILA 1 -->
             <div class="stat-card">
                 <div class="stat-title">Presupuestos</div>
                 <div class="stat-value" id="kpiTotal">0</div>
@@ -179,6 +197,11 @@
                 <div class="stat-title" style="color: var(--pedidos);">Importe Pedidos</div>
                 <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
+            <!-- FILA 2 -->
+            <div class="stat-card danger">
+                <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
+                <div class="stat-value" id="kpiFueraPlazo">0</div>
+            </div>
             <div class="stat-card info">
                 <div class="stat-title">Tiempo Invertido</div>
                 <div class="stat-value" id="kpiHoras">0 min</div>
@@ -186,10 +209,6 @@
             <div class="stat-card success">
                 <div class="stat-title">Media Días (Presentar)</div>
                 <div class="stat-value" id="kpiMediaDias">0</div>
-            </div>
-            <div class="stat-card danger">
-                <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
-                <div class="stat-value" id="kpiFueraPlazo">0</div>
             </div>
         </div>
 

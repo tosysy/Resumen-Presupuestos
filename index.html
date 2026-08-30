@@ -24,8 +24,23 @@
             --pedidos: #0284c7; 
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            /* MARCA DE AGUA DE FONDO */
+            background-color: var(--bg-color);
+            /* El degradado aplica un 90% de color sobre la imagen para que sea sutil */
+            background-image: linear-gradient(rgba(238, 242, 246, 0.90), rgba(238, 242, 246, 0.90)), url('logo.png'); 
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed; /* Se mantiene en el centro al hacer scroll */
+            background-size: 50%; /* Tamaño del logo en el fondo. Puedes cambiarlo (ej. 40%, 60%) */
+            
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px; 
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
         
         /* --- CABECERA CORPORATIVA --- */
         .header-corp {
@@ -46,15 +61,14 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 5px 15px;
-            border-radius: 6px;
-            min-height: 45px;
         }
 
-        .logo-img {
-            max-height: 45px;
-            display: block; 
+        .logo-container h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #ffffff;
         }
 
         .header-corp p { margin: 0; font-size: 14px; opacity: 0.9; font-weight: 500; }
@@ -88,12 +102,12 @@
         }
         .stats-row-top { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* 4 columnas exactas y equitativas */
+            grid-template-columns: repeat(4, 1fr); 
             gap: 15px; 
         }
         .stats-row-bottom { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 columnas exactas y equitativas */
+            grid-template-columns: repeat(3, 1fr); 
             gap: 15px; 
         }
         .stat-card { 
@@ -124,7 +138,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         td { padding: 10px; border-bottom: 1px solid var(--border); color: #475569; }
-        tr:hover td { background-color: var(--bg-color); }
+        tr:hover td { background-color: rgba(238, 242, 246, 0.5); }
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -136,7 +150,6 @@
         .sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
         .sort-btn:hover { color: #fff; }
 
-        /* Media queries para que no se aplaste en tablets o móviles */
         @media (max-width: 1024px) {
             .stats-row-top, .stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
         }
@@ -152,15 +165,8 @@
         <!-- CABECERA CORPORATIVA ÁNCORA -->
         <header class="header-corp">
             <div class="logo-container">
-                <!-- Logo local: debe estar en la misma carpeta que el archivo HTML -->
-                <img src="logo.png" alt="Logo Áncora Efectos Navales" class="logo-img" id="realLogo" onerror="this.style.display='none'; document.getElementById('svgLogo').style.display='block';">
-                
-                <!-- Icono de Ancla de repuesto (Fallback) -->
-                <svg id="svgLogo" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); display: none;">
-                    <circle cx="12" cy="5" r="3"></circle>
-                    <line x1="12" y1="22" x2="12" y2="8"></line>
-                    <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
-                </svg>
+                <!-- Se ha sustituido la imagen por el título, ya que el logo es ahora el fondo -->
+                <h1>Áncora Efectos Navales</h1>
             </div>
             <div>
                 <p>Dashboard Integral (Presupuestos y Pedidos)</p>

@@ -3,33 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Integral (Presupuestos y Pedidos)</title>
+    <title>Dashboard Integral - Áncora Efectos Navales</title>
     <!-- Cargamos la librería de gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --card-bg: #fff;
-            --primary: #0f172a;
-            --secondary: #3b82f6;
-            --border: #e2e8f0;
+            /* PALETA CORPORATIVA ÁNCORA EFECTOS NAVALES */
+            --bg-color: #eef2f6; 
+            --text-color: #334155;
+            --card-bg: #ffffff;
+            
+            --primary: #0B2447; 
+            --secondary: #19376D; 
+            --accent: #576CBC; 
+            
+            --border: #cbd5e1;
             --danger: #ef4444;
-            --success: #22c55e;
+            --success: #10b981; 
             --warning: #f59e0b;
-            --purple: #8b5cf6;
+            --pedidos: #0284c7; 
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
-        h2 { margin-top: 0; color: var(--primary); font-size: 20px; }
+        
+        /* --- CABECERA CORPORATIVA --- */
+        .header-corp {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente para que resalte el logo azul */
+            padding: 5px 15px;
+            border-radius: 6px;
+        }
+
+        .logo-img {
+            max-height: 45px;
+            display: block; 
+        }
+
+        .header-corp p { margin: 0; font-size: 14px; opacity: 0.9; font-weight: 500; }
+
+        h2 { margin-top: 0; color: var(--primary); font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;}
 
         /* --- FILTROS --- */
-        .filters-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .filters-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; border-top: 4px solid var(--accent); }
         .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
-        .input-group label { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
-        input:focus { outline: none; border-color: var(--secondary); }
+        .input-group label { font-size: 12px; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
+        input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; color: var(--primary); }
+        input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(87, 108, 188, 0.2); }
 
         /* --- SELECTORES DESPLEGABLES (CUSTOM SELECT) --- */
         .custom-select { position: relative; }
@@ -40,39 +76,39 @@
             z-index: 10; margin-top: 4px;
         }
         .option-item { padding: 8px 12px; cursor: pointer; font-size: 13px; color: #475569; }
-        .option-item:hover { background-color: #f1f5f9; color: var(--primary); font-weight: 500; }
+        .option-item:hover { background-color: var(--bg-color); color: var(--primary); font-weight: 600; }
 
         /* --- DASHBOARD STATS --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); display: flex; flex-direction: column; }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
-        .stat-card.info { border-left-color: var(--secondary); }
-        .stat-card.pedidos { border-left-color: var(--purple); }
+        .stat-card.info { border-left-color: var(--accent); }
+        .stat-card.pedidos { border-left-color: var(--pedidos); }
         
         .stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
 
         /* --- GRÁFICOS --- */
         .charts-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; justify-content: center; }
         .chart-box { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; min-width: 300px; max-width: 450px; text-align: center; position: relative; }
-        .chart-box h3 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        .chart-box h3 { font-size: 14px; color: var(--secondary); text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
         .chart-percentage { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 800; color: var(--primary); }
 
         /* --- TABLAS --- */
-        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; padding: 20px; }
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; padding: 20px; border-top: 4px solid var(--primary); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         td { padding: 10px; border-bottom: 1px solid var(--border); color: #475569; }
-        tr:hover td { background-color: #f8fafc; }
+        tr:hover td { background-color: var(--bg-color); }
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .bold { font-weight: bold; color: var(--primary); }
         
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         .loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
-        .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--secondary); font-weight: bold; }
+        .empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--accent); font-weight: bold; }
         .sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
         .sort-btn:hover { color: #fff; }
     </style>
@@ -80,6 +116,18 @@
 <body>
 
     <div class="container">
+        
+        <!-- CABECERA CORPORATIVA ÁNCORA -->
+        <header class="header-corp">
+            <div class="logo-container">
+                <!-- Logo de Áncora Efectos Navales -->
+                <img src="https://ancoravigo.com/wp-content/uploads/2016/02/LOGO-ANCORA-.png" alt="Logo Áncora Efectos Navales" class="logo-img">
+            </div>
+            <div>
+                <p>Dashboard Integral (Presupuestos y Pedidos)</p>
+            </div>
+        </header>
+
         <!-- FILTROS -->
         <div class="filters-section">
             <div class="input-group custom-select">
@@ -116,14 +164,13 @@
                 <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
             </div>
             <div class="stat-card pedidos">
-                <div class="stat-title" style="color: var(--purple);">Pedidos</div>
+                <div class="stat-title" style="color: var(--pedidos);">Pedidos</div>
                 <div class="stat-value" id="kpiTotalPedidos">0</div>
             </div>
             <div class="stat-card pedidos">
-                <div class="stat-title" style="color: var(--purple);">Importe Pedidos</div>
+                <div class="stat-title" style="color: var(--pedidos);">Importe Pedidos</div>
                 <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
             </div>
-            <!-- TARJETA: TIEMPO INVERTIDO (Días, Horas y Minutos) -->
             <div class="stat-card info">
                 <div class="stat-title">Tiempo Invertido</div>
                 <div class="stat-value" id="kpiHoras">0 min</div>
@@ -160,7 +207,7 @@
 
         <!-- TABLA RESUMEN POR USUARIO -->
         <div class="card">
-            <h2>📊 Resumen por Usuario (Presupuestos)</h2>
+            <h2>📊 Resumen por Usuario</h2>
             <div style="overflow-x: auto;">
                 <table id="summaryTable">
                     <thead>
@@ -310,20 +357,14 @@
             return null; 
         }
 
-        // Formatea los minutos totales en Días, Horas y Minutos
         function formatTiempo(totalMinutos) {
             if (!totalMinutos || totalMinutos <= 0) return "0 min";
+            let h = Math.floor(totalMinutos / 60);
+            let m = Math.round(totalMinutos % 60);
             
-            let dias = Math.floor(totalMinutos / 1440);
-            let horas = Math.floor((totalMinutos % 1440) / 60);
-            let minutos = Math.round(totalMinutos % 60);
-            
-            let partes = [];
-            if (dias > 0) partes.push(`${dias} d`);
-            if (horas > 0) partes.push(`${horas} h`);
-            if (minutos > 0 || partes.length === 0) partes.push(`${minutos} min`);
-            
-            return partes.join(' ');
+            if (h > 0 && m > 0) return `${h} h ${m} min`;
+            if (h > 0) return `${h} h`;
+            return `${m} min`;
         }
 
         async function loadData() {
@@ -421,7 +462,7 @@
                     cliente: indices.clienteIdx !== -1 ? (r[indices.clienteIdx] || '') : '',
                     grupoCliente: indices.grupoIdx !== -1 ? (r[indices.grupoIdx] || '') : '',
                     importe: importeNum,
-                    minutos: minutosNum
+                    minutos: minutosNum 
                 });
             }
             return registros;
@@ -502,7 +543,7 @@
             let endDate = null;
             if (endVal) {
                 const [y, m, d] = endVal.split('-');
-                endDate = new Date(y, m - 1, d, 23, 59, 59, 999);
+                endDate = new Date(y, m - 1, d, 23, 59, 59, 999); 
             }
 
             currentFilteredPre = allRegistros.filter(row => {
@@ -613,7 +654,7 @@
                 labels: ['Pedidos (Aceptado)', 'Presupuestos (Restante)'],
                 datasets: [{
                     data: [pedidosCant, remCant],
-                    backgroundColor: ['#22c55e', '#f1f5f9'],
+                    backgroundColor: ['#10b981', '#f1f5f9'], 
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -623,7 +664,7 @@
                 labels: ['Importe Pedidos', 'Importe Presup. (Restante)'],
                 datasets: [{
                     data: [pedidosImp, remImp],
-                    backgroundColor: ['#8b5cf6', '#f1f5f9'],
+                    backgroundColor: ['#0284c7', '#f1f5f9'], 
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -720,7 +761,7 @@
                 const tr = document.createElement('tr');
                 
                 let bgColor = '#e2e8f0', color = '#475569';
-                if(row.estado.toLowerCase().includes('aceptado')) { bgColor = '#dcfce7'; color = '#15803d'; }
+                if(row.estado.toLowerCase().includes('aceptado')) { bgColor = '#d1fae5'; color = '#047857'; }
                 if(row.estado.toLowerCase().includes('rechazado')) { bgColor = '#fee2e2'; color = '#b91c1c'; }
                 if(row.estado.toLowerCase().includes('pendiente')) { bgColor = '#fef3c7'; color = '#d97706'; }
 

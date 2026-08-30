@@ -190,8 +190,52 @@ tr:hover td { background-color: rgba(238, 242, 246, 0.7); }
 .sort-btn:hover { color: #fff; }
 
 @media (max-width: 1024px) {
-    .stats-row-top, .stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
+    body {
+        padding: 12px;
+    }
+    .header-corp {
+        padding: 15px 20px;
+        margin-bottom: 15px;
+    }
+    .filters-section {
+        padding: 15px;
+        margin-bottom: 15px;
+        gap: 12px;
+    }
+    .stats-container {
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .stat-card {
+        padding: 12px 14px;
+        border-left-width: 4px;
+    }
+    .stat-title {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    .stat-value {
+        font-size: 18px;
+    }
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .chart-box {
+        padding: 12px;
+        min-width: 0;
+        max-width: none;
+    }
+    .chart-canvas-container {
+        height: 130px;
+    }
+    .chart-percentage {
+        font-size: 18px;
+    }
 }
+
 @media (max-width: 600px) {
     body {
         padding: 8px;

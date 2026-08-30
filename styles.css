@@ -1,10 +1,10 @@
 :root {
     /* PALETA CORPORATIVA ÁNCORA EFECTOS NAVALES */
-    --bg-color: #0b2447; 
+    --bg-color: #eef2f6; 
     --text-color: #334155;
     
-    /* Fondo semitransparente para dejar ver el logo blanco sobre el azul */
-    --card-bg: rgba(255, 255, 255, 0.82); 
+    /* Fondo semitransparente para dejar ver el logo (65% de opacidad blanca) */
+    --card-bg: rgba(255, 255, 255, 0.65); 
     
     --primary: #0B2447; 
     --secondary: #19376D; 
@@ -19,13 +19,13 @@
 
 body { 
     font-family: 'Segoe UI', system-ui, sans-serif; 
-    /* MARCA DE AGUA DE FONDO CON LOGO BLANCO SOBRE AZUL CORPORATIVO */
+    /* MARCA DE AGUA DE FONDO */
     background-color: var(--bg-color);
-    background-image: linear-gradient(rgba(11, 36, 71, 0.50), rgba(11, 36, 71, 0.50)), url('logo-white.png'); 
+    background-image: linear-gradient(rgba(238, 242, 246, 0.70), rgba(238, 242, 246, 0.70)), url('logo.png'); 
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed; 
-    background-size: 55%; 
+    background-size: 50%; 
     color: var(--text-color); 
     margin: 0; 
     padding: 20px; 
@@ -35,12 +35,11 @@ body {
 
 /* --- CABECERA CORPORATIVA --- */
 .header-corp {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%), var(--primary);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     color: white;
     padding: 20px 30px;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
@@ -56,9 +55,8 @@ body {
 }
 
 .logo-container img {
-    height: 40px;
-    width: auto;
-    object-fit: contain;
+    max-height: 45px;
+    display: block; 
 }
 
 .logo-container h1 {
@@ -85,18 +83,20 @@ h2 { margin-top: 0; color: var(--primary); font-size: 18px; text-transform: uppe
     gap: 15px; 
     align-items: flex-end; 
     border-top: 4px solid var(--accent); 
-    backdrop-filter: blur(3px); /* Efecto cristal sutil */
+    backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 }
 .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
 .input-group label { font-size: 12px; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
 input { 
-    background-color: rgba(255, 255, 255, 0.7); /* Inputs también semitransparentes */
+    background-color: rgba(255, 255, 255, 0.7); 
     padding: 10px; 
     border: 1px solid var(--border); 
     border-radius: 6px; 
     font-size: 14px; 
     color: var(--primary); 
+    width: 100%;
+    box-sizing: border-box;
 }
 input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(87, 108, 188, 0.2); background-color: #fff; }
 
@@ -104,7 +104,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px 
 .custom-select { position: relative; }
 .options-list {
     display: none; position: absolute; top: 100%; left: 0; right: 0;
-    background: #fff; /* Este debe ser blanco sólido para que no se superpongan los textos al abrir */
+    background: #fff; 
     border: 1px solid var(--border); border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto;
     z-index: 10; margin-top: 4px;
@@ -188,9 +188,64 @@ tr:hover td { background-color: rgba(238, 242, 246, 0.7); }
 .sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
 .sort-btn:hover { color: #fff; }
 
+/* =========================================
+   AJUSTES RESPONSIVE (MÓVILES Y TABLETS)
+========================================= */
+
 @media (max-width: 1024px) {
+    /* En tablets, dividimos las tarjetas en bloques de 2 */
     .stats-row-top, .stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
+    
+    body { background-size: 80%; } /* Agrandamos el logo de fondo */
 }
-@media (max-width: 600px) {
+
+@media (max-width: 768px) {
+    body { 
+        padding: 10px; 
+        background-size: 120%; /* En móviles, el logo cubre más pantalla */
+        background-attachment: scroll; /* Mejora el rendimiento al hacer scroll en móviles */
+    }
+
+    /* Cabecera centrada y apilada */
+    .header-corp {
+        flex-direction: column;
+        text-align: center;
+        justify-content: center;
+        padding: 15px;
+    }
+    .logo-container {
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .logo-container h1 {
+        font-size: 20px;
+    }
+
+    /* Filtros apilados al 100% de ancho */
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .input-group {
+        min-width: 100%;
+    }
+
+    /* Tarjetas en 1 sola columna */
     .stats-row-top, .stats-row-bottom { grid-template-columns: 1fr; }
+
+    /* Gráficos ocupando el ancho completo */
+    .chart-box {
+        min-width: 100%;
+    }
+
+    /* Protección de Tablas: Evita que el texto de las celdas se aplaste verticalmente */
+    th, td {
+        white-space: nowrap; 
+    }
+    
+    .card {
+        padding: 15px 10px;
+        overflow-x: auto; /* Permite hacer scroll lateral en la tabla si es necesario en móvil */
+    }
 }

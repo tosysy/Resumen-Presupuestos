@@ -161,6 +161,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px 
     -webkit-backdrop-filter: blur(3px);
 }
 .chart-box h3 { font-size: 14px; color: var(--secondary); text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+.chart-canvas-container { position: relative; height: 200px; }
 .chart-percentage { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 800; color: var(--primary); }
 
 /* --- TABLAS --- */
@@ -192,5 +193,76 @@ tr:hover td { background-color: rgba(238, 242, 246, 0.7); }
     .stats-row-top, .stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-    .stats-row-top, .stats-row-bottom { grid-template-columns: 1fr; }
+    body {
+        padding: 10px;
+    }
+    .header-corp {
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .logo-container {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .logo-container img {
+        height: 30px;
+    }
+    .logo-container h1 {
+        font-size: 18px;
+    }
+    .filters-section {
+        padding: 12px;
+        margin-bottom: 15px;
+        gap: 10px;
+    }
+    .input-group {
+        min-width: 130px;
+    }
+    .stats-container {
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    .stats-row-top {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .stats-row-bottom {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .stats-row-bottom > div:last-child {
+        grid-column: span 2;
+    }
+    .stat-card {
+        padding: 10px 12px;
+        border-left-width: 3px;
+    }
+    .stat-title {
+        font-size: 10px;
+        margin-bottom: 2px;
+    }
+    .stat-value {
+        font-size: 16px;
+    }
+    .charts-container {
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .chart-box {
+        padding: 12px;
+        min-width: 100%;
+    }
+    .chart-box h3 {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    .chart-canvas-container {
+        height: 140px;
+    }
+    .chart-percentage {
+        font-size: 20px;
+    }
 }

@@ -80,12 +80,17 @@
         .option-item:hover { background-color: var(--bg-color); color: var(--primary); font-weight: 600; }
 
         /* --- DASHBOARD STATS --- */
-        .stats-grid { 
+        .stats-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+        .stats-row { 
             display: flex; 
             flex-wrap: wrap; 
             justify-content: center; 
             gap: 15px; 
-            margin-bottom: 25px; 
         }
         .stat-card { 
             background: var(--card-bg); 
@@ -95,8 +100,9 @@
             border-left: 5px solid var(--primary); 
             display: flex; 
             flex-direction: column; 
+            /* Se fuerza a que todas tengan el mismo ancho de base (cuarta parte menos huecos) */
             flex: 0 1 calc(25% - 15px); 
-            min-width: 220px;
+            min-width: 200px;
         }
         .stat-card.danger { border-left-color: var(--danger); }
         .stat-card.success { border-left-color: var(--success); }
@@ -178,38 +184,44 @@
         </div>
 
         <!-- DASHBOARD (KPIs) -->
-        <!-- Se ha cambiado el orden en el HTML para que aparezcan correctamente alineadas -->
-        <div class="stats-grid">
-            <!-- FILA 1 -->
-            <div class="stat-card">
-                <div class="stat-title">Presupuestos</div>
-                <div class="stat-value" id="kpiTotal">0</div>
+        <div class="stats-container">
+            
+            <!-- FILA 1: 4 Tarjetas -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-title">Presupuestos</div>
+                    <div class="stat-value" id="kpiTotal">0</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-title">Importe Presupuestos</div>
+                    <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
+                </div>
+                <div class="stat-card pedidos">
+                    <div class="stat-title" style="color: var(--pedidos);">Pedidos</div>
+                    <div class="stat-value" id="kpiTotalPedidos">0</div>
+                </div>
+                <div class="stat-card pedidos">
+                    <div class="stat-title" style="color: var(--pedidos);">Importe Pedidos</div>
+                    <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
+                </div>
             </div>
-            <div class="stat-card info">
-                <div class="stat-title">Importe Presupuestos</div>
-                <div class="stat-value" id="kpiImporteProcesado">0,00 €</div>
+
+            <!-- FILA 2: 3 Tarjetas (Media días en el centro) -->
+            <div class="stats-row">
+                <div class="stat-card danger">
+                    <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
+                    <div class="stat-value" id="kpiFueraPlazo">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-title">Media Días (Presentar)</div>
+                    <div class="stat-value" id="kpiMediaDias">0</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-title">Tiempo Invertido</div>
+                    <div class="stat-value" id="kpiHoras">0 min</div>
+                </div>
             </div>
-            <div class="stat-card pedidos">
-                <div class="stat-title" style="color: var(--pedidos);">Pedidos</div>
-                <div class="stat-value" id="kpiTotalPedidos">0</div>
-            </div>
-            <div class="stat-card pedidos">
-                <div class="stat-title" style="color: var(--pedidos);">Importe Pedidos</div>
-                <div class="stat-value" id="kpiImportePedidos">0,00 €</div>
-            </div>
-            <!-- FILA 2 -->
-            <div class="stat-card danger">
-                <div class="stat-title">Presup. Fuera Plazo (>5d)</div>
-                <div class="stat-value" id="kpiFueraPlazo">0</div>
-            </div>
-            <div class="stat-card info">
-                <div class="stat-title">Tiempo Invertido</div>
-                <div class="stat-value" id="kpiHoras">0 min</div>
-            </div>
-            <div class="stat-card success">
-                <div class="stat-title">Media Días (Presentar)</div>
-                <div class="stat-value" id="kpiMediaDias">0</div>
-            </div>
+
         </div>
 
         <!-- SECCIÓN DE GRÁFICOS -->

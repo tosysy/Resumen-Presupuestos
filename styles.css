@@ -1,0 +1,189 @@
+:root {
+    /* PALETA CORPORATIVA ÁNCORA EFECTOS NAVALES */
+    --bg-color: #eef2f6; 
+    --text-color: #334155;
+    
+    /* Fondo semitransparente para dejar ver el logo (65% de opacidad blanca) */
+    --card-bg: rgba(255, 255, 255, 0.65); 
+    
+    --primary: #0B2447; 
+    --secondary: #19376D; 
+    --accent: #576CBC; 
+    
+    --border: rgba(203, 213, 225, 0.6);
+    --danger: #ef4444;
+    --success: #10b981; 
+    --warning: #f59e0b;
+    --pedidos: #0284c7; 
+}
+
+body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    /* MARCA DE AGUA DE FONDO */
+    background-color: var(--bg-color);
+    background-image: linear-gradient(rgba(238, 242, 246, 0.70), rgba(238, 242, 246, 0.70)), url('logo.png'); 
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed; 
+    background-size: 50%; 
+    color: var(--text-color); 
+    margin: 0; 
+    padding: 20px; 
+}
+
+.container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* --- CABECERA CORPORATIVA --- */
+.header-corp {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-container h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.header-corp p { margin: 0; font-size: 14px; opacity: 0.9; font-weight: 500; }
+
+h2 { margin-top: 0; color: var(--primary); font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;}
+
+/* --- FILTROS --- */
+.filters-section { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    margin-bottom: 20px; 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 15px; 
+    align-items: flex-end; 
+    border-top: 4px solid var(--accent); 
+    backdrop-filter: blur(3px); /* Efecto cristal sutil */
+    -webkit-backdrop-filter: blur(3px);
+}
+.input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
+.input-group label { font-size: 12px; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
+input { 
+    background-color: rgba(255, 255, 255, 0.7); /* Inputs también semitransparentes */
+    padding: 10px; 
+    border: 1px solid var(--border); 
+    border-radius: 6px; 
+    font-size: 14px; 
+    color: var(--primary); 
+}
+input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(87, 108, 188, 0.2); background-color: #fff; }
+
+/* --- SELECTORES DESPLEGABLES (CUSTOM SELECT) --- */
+.custom-select { position: relative; }
+.options-list {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: #fff; /* Este debe ser blanco sólido para que no se superpongan los textos al abrir */
+    border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto;
+    z-index: 10; margin-top: 4px;
+}
+.option-item { padding: 8px 12px; cursor: pointer; font-size: 13px; color: #475569; }
+.option-item:hover { background-color: #f1f5f9; color: var(--primary); font-weight: 600; }
+
+/* --- DASHBOARD STATS (CSS GRID ESTRICTO) --- */
+.stats-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    margin-bottom: 25px; 
+}
+.stats-row-top { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 15px; 
+}
+.stats-row-bottom { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 15px; 
+}
+.stat-card { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    border-left: 5px solid var(--primary); 
+    display: flex; 
+    flex-direction: column; 
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.stat-card.danger { border-left-color: var(--danger); }
+.stat-card.success { border-left-color: var(--success); }
+.stat-card.info { border-left-color: var(--accent); }
+.stat-card.pedidos { border-left-color: var(--pedidos); }
+
+.stat-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+.stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+
+/* --- GRÁFICOS --- */
+.charts-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; justify-content: center; }
+.chart-box { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    flex: 1; min-width: 300px; max-width: 450px; 
+    text-align: center; position: relative; 
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.chart-box h3 { font-size: 14px; color: var(--secondary); text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+.chart-percentage { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 800; color: var(--primary); }
+
+/* --- TABLAS --- */
+.card { 
+    background: var(--card-bg); 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    margin-bottom: 20px; overflow: hidden; padding: 20px; 
+    border-top: 4px solid var(--primary); 
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--primary); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
+td { padding: 10px; border-bottom: 1px solid var(--border); color: #475569; }
+tr:hover td { background-color: rgba(238, 242, 246, 0.7); }
+
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.bold { font-weight: bold; color: var(--primary); }
+
+.status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+.loading { padding: 40px; text-align: center; font-size: 16px; color: #64748b; font-weight: bold; }
+.empty-state { padding: 40px; text-align: center; font-size: 16px; color: var(--accent); font-weight: bold; }
+.sort-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2em; padding: 0 2px; }
+.sort-btn:hover { color: #fff; }
+
+@media (max-width: 1024px) {
+    .stats-row-top, .stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .stats-row-top, .stats-row-bottom { grid-template-columns: 1fr; }
+}
